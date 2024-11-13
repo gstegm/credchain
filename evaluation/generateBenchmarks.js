@@ -1,5 +1,5 @@
 const { ZKP_performance } = require("../ZKP/ZKPperformance");
-const { HE_performance } = require("../HomomorphicEncryption/HEperformance");
+const { HE_performance } = require("../HomomorphicEncryption/HEperformance_");
 
 async function main() {
     // Get the number of runs from command-line arguments
@@ -7,10 +7,10 @@ async function main() {
     const runs = parseInt(args[0], 10);   // Parse the first argument as an integer
 
     // Use 50 as the default value if no valid argument is provided
-    const numberOfRuns = isNaN(runs) ? 50 : runs;
+    const numberOfRuns = isNaN(runs) ? 300 : runs;
 
-    await ZKP_performance(numberOfRuns);
-    console.log("\n==================================================");
+    // await ZKP_performance(numberOfRuns);
+    // console.log("\n==================================================");
     await HE_performance(numberOfRuns);
 }
 

@@ -51,11 +51,32 @@ async function HEperformance(runs) {
         const setupStats = await measureFunctionExecution(companySetup, 'companySetup', degreeThresholdTimestamp);
         companySetupStats.push(setupStats);
 
-        const studentStats = await measureFunctionExecution(studentMain, 'studentMain', degreeIssuanceTimestamp, setupStats.result.companySetupData);
+        // console.log('studentStats', setupStats);
+
+        const studentStats = await measureFunctionExecution(
+            studentMain,
+            'studentMain',
+            degreeIssuanceTimestamp,
+            setupStats.result.companySetupData,
+            setupStats.result.companySetupData.ciphertextSignature,
+            setupStats.result.companySetupData.signaturePublicKey,
+        );
         studentMainStats.push(studentStats);
 
-        const companyStats = await measureFunctionExecution(companyMain, 'companyMain', studentStats.result, setupStats.result.companySetupData, setupStats.result.companySecretKey);
+        // console.log('studentStats', studentStats.result);
+
+        // studentStats.result -> there's no result, studentStats returns false
+
+        const companyStats = await measureFunctionExecution(
+            companyMain,
+            'companyMain',
+            studentStats.result,
+            setupStats.result.companySetupData,
+            setupStats.result.companySecretKey,
+        );
         companyMainStats.push(companyStats);
+
+        // console.log('studentStats', companyStats.result);
     }
 
     const companySetupCPU = companySetupStats.map(stat => stat.cpu);

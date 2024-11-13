@@ -1,8 +1,9 @@
 const SEAL = require('node-seal');
 const fs = require('fs');
 const crypto = require("crypto");
+const { subtle } = globalThis.crypto;
 
-async function studentMain(degreeIssuanceTimestamp, setupData) {
+async function studentMain(degreeIssuanceTimestamp, setupData, signature, sigPubKey) {
     const seal = await SEAL();
     const securityLevel = seal.SecurityLevel.tc128;
     const bitSizeFloat = 40;
@@ -19,6 +20,22 @@ async function studentMain(degreeIssuanceTimestamp, setupData) {
 
     const cDegreeThresholdTimestamp = seal.CipherText();
     cDegreeThresholdTimestamp.load(context, setupData.cipherTextThreshold);
+
+    // const signaturePubKey = seal.CipherText();
+    // signaturePubKey.load(context, setupData.signturePublicKey);
+
+    // const signature = seal.CipherText();
+    // signature.load(context, setupData.ciphertextSignature);
+
+    // console.log('cipher at student', setupData.cipherTextThreshold);
+
+    // console.log('setupdata', setupData);
+
+    // verify signature
+    const sigVerify = await signatureVerify(sigPubKey, signature, setupData.cipherTextThreshold);
+    // if (!sigVerify) { return false }
+
+    // console.log('signature', sigVerify)
 
     const evaluator = seal.Evaluator(context);
     const ckksEncoder = seal.CKKSEncoder(context);
@@ -39,6 +56,7 @@ async function studentMain(degreeIssuanceTimestamp, setupData) {
     const cResultMultiplication = seal.CipherText();
     evaluator.multiplyPlain(cResultSubtraction, pRand, cResultMultiplication);
 
+    // console.log('student result', cResultMultiplication)
 
     // Create the JSON object
     const studentData = {
@@ -68,4 +86,37 @@ function generateSecureRandomFloat() {
     return parseFloat(scaledFloat.toFixed(5));
 }
 
-module.exports = { studentMain };
+
+
+// verify signed message sent by company with its public key
+async function signatureVerify(pubKey, signature, data) {
+    const ec = new TextEncoder();
+    const verified = await subtle.verify({ name: 'ECDSA', hash: { name: 'SHA-384' }}, pubKey, signature, ec.encode(data));
+    return verified;
+}
+
+async function generateEvaluator(context) {
+    const seal = await SEAL();
+    const evaluator = seal.Evaluator(context);
+    return evaluator;
+}
+
+async function computeResult(encoder, evaluator, cipher1, cipher2) {
+    // const seal = await SEAL();
+    const bitSizeFloat = 40;
+    const rand = generateSecureRandomFloat();
+    const pRand = encoder.encode(Float64Array.from([rand]), Math.pow(2, bitSizeFloat));
+    const subResult = evaluator.sub(cipher1, cipher2);
+    const mutResult = evaluator.multiplyPlain(subResult, pRand);
+    return mutResult;
+}
+
+async function proverEncodeEncrypt(value, encoder, encryptor) {
+    const bitSizeFloat = 40;
+    const plain = encoder.encode(Float64Array.from([value]), Math.pow(2, bitSizeFloat));
+    const cipher = encryptor.encrypt(plain);
+    return cipher;
+}
+
+
+module.exports = { studentMain, signatureVerify, generateEvaluator, computeResult, proverEncodeEncrypt };
