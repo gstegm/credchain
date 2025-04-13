@@ -1,5 +1,5 @@
 const SEAL = require('node-seal');
-const tfhe_rs = require('./tfhe_comparison.node')
+const tfhe_rs = require('../tfhe_comparison.node')
 const fs = require('fs');
 const { subtle } = globalThis.crypto;
 
@@ -8,7 +8,7 @@ async function generateEncryptionKeys() {
     const keys = tfhe_rs.getkeys();
     const decryptor = keys[0];
     const evaluator = keys[1];
-    const encryptor = tfhe_rs.getpublickey(decryptor);
+    const encryptor = keys[2];
 
     const instances = {
         encryptor: encryptor,

@@ -1,5 +1,5 @@
 const SEAL = require('node-seal');
-const tfhe_rs = require('./tfhe_comparison.node')
+const tfhe_rs = require('../tfhe_comparison.node')
 const fs = require('fs');
 const crypto = require("crypto");
 const { subtle } = globalThis.crypto;
