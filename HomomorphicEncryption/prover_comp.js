@@ -11,18 +11,18 @@ async function signatureVerify(pubKey, signature, data) {
     return verified;
 }
 
-async function generateEvaluator(context) {
-    const seal = await SEAL();
-    const evaluator = seal.Evaluator(context);
-    return evaluator;
-}
+//async function generateEvaluator(context) {
+//    const seal = await SEAL();
+//    const evaluator = seal.Evaluator(context);
+//    return evaluator;
+//}
 
 async function computeResult(evaluator, cipher1, cipher2) {
     // const seal = await SEAL();
     const compResult = tfhe_rs.compare(cipher1, cipher2, evaluator);
 
-    const proverResult = { result: compResult.save() }
-    fs.writeFileSync('./HomomorphicEncryption/proverData.json', JSON.stringify(proverResult));
+    //const proverResult = { result: compResult.save() }
+    //fs.writeFileSync('./HomomorphicEncryption/proverData.json', JSON.stringify(proverResult));
 
     return compResult;
 }
@@ -41,4 +41,5 @@ async function proverCalculate(timestamp, signPublicKey, signature, thresholdCip
     }
 }
 
-module.exports = { proverCalculate, signatureVerify, generateEvaluator, computeResult, proverEncrypt };
+//module.exports = { proverCalculate, signatureVerify, generateEvaluator, computeResult, proverEncrypt };
+module.exports = { proverCalculate, signatureVerify, computeResult, proverEncrypt };

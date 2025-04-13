@@ -9,3 +9,12 @@ typechain-types
 cache
 artifacts
 
+HomomorphicEncryption/companySecretKey.json
+HomomorphicEncryption/companySetupData.json
+HomomorphicEncryption/proverData.json
+.gitignore
+ZKP/proof.json
+HomomorphicEncryption/studentData.json
+ZKP/verificationKey.json
+ZKP/proof.json
+evaluation/cpu_usage_comparison.png

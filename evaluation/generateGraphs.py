@@ -252,7 +252,7 @@ def plot_comparison_bar(data, labels, title, y_label, filename, unit):
         ax[i].set_ylabel(y_labels[i])
         ax[i].set_xlim(-1 + width / 2, 2 - width / 2 )
 
-    # plt.savefig(f"./evaluation/{filename}.png")
+    plt.savefig(f"./evaluation/{filename}.png")
     plt.show()
 
 

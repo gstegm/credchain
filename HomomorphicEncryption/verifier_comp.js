@@ -6,9 +6,9 @@ const { subtle } = globalThis.crypto;
 // function to generate encryption keys for HE
 async function generateEncryptionKeys() {
     const keys = tfhe_rs.getkeys();
-    const encryptor = addon.getpublickey(clientkey);
     const decryptor = keys[0];
     const evaluator = keys[1];
+    const encryptor = tfhe_rs.getpublickey(decryptor);
 
     const instances = {
         encryptor: encryptor,
@@ -42,7 +42,7 @@ async function verifierSign(key, data) {
 async function verifierEncrypt(value, encryptor) {
     // const seal = await SEAL();
     const cipher = tfhe_rs.encpub(value, encryptor);
-    console.log('size cipher', Buffer.byteLength(JSON.stringify(cipher.save())))
+    //console.log('size cipher', Buffer.byteLength(JSON.stringify(cipher.save())))
     return cipher;
 }
 
