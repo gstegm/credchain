@@ -66,7 +66,6 @@ async function HEperformance(runs) {
             generateVerifierSetUpStat.result.signPublicKey,
             generateVerifierSetUpStat.result.verifierSignature,
             generateVerifierSetUpStat.result.thresholdCiphertext,
-            generateVerifierSetUpStat.result.verifierEncoder,
             generateVerifierSetUpStat.result.verifierEncryptor,
             generateVerifierSetUpStat.result.proverEvaluator,
         );
@@ -76,7 +75,6 @@ async function HEperformance(runs) {
             verifierProve,
             'verifierProve',
             generateProverStat.result,
-            generateVerifierSetUpStat.result.verifierEncoder,
             generateVerifierSetUpStat.result.verifierDecryptor,
         );
         verifierVerifyStat.push(generateVerifierVerifyStat);

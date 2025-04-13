@@ -19,7 +19,7 @@ async function signatureVerify(pubKey, signature, data) {
 
 async function computeResult(evaluator, cipher1, cipher2) {
     // const seal = await SEAL();
-    const compResult = tfhe_rs.compare(cipher1, cipher2, evaluator);
+    const compResult = tfhe_rs.gt(cipher1, cipher2, evaluator);
 
     //const proverResult = { result: compResult.save() }
     //fs.writeFileSync('./HomomorphicEncryption/proverData.json', JSON.stringify(proverResult));

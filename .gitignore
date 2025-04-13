@@ -22,3 +22,4 @@ target
 evaluation/ZKP_performance_data.csv
 Cargo.lock
 tfhe_comparison.node
+evaluation/HE_performance_data.csv
