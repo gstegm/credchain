@@ -1,0 +1,16 @@
+[package]
+name = "tfhe_comparison"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+napi = "2"
+napi-derive = "2"
+#tfhe = { version = "~1.0.0", features = ["integer", "gpu" ] }
+tfhe = { version = "~1.0.0", features = ["integer"] }
+
+[build-dependencies]
+napi-build = "1"
