@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "napi build --release",
+    "build:debug": "napi build"
   },
   "keywords": [],
   "author": "",
@@ -13,7 +14,11 @@
     "@nomicfoundation/hardhat-toolbox": "^1.0.2",
     "@nomiclabs/hardhat-truffle5": "^2.0.7",
     "@nomiclabs/hardhat-web3": "^2.0.0",
-    "hardhat": "^2.22.6"
+    "hardhat": "^2.22.6",
+    "@napi-rs/cli": "^1.0.0"
+  },
+  "napi": {
+    "name": "tfhe_comparison"
   },
   "dependencies": {
     "@nomiclabs/hardhat-ethers": "^2.2.3",
