@@ -75,7 +75,7 @@ fn gt(cipher_a_ser: Buffer, cipher_b_ser: Buffer, server_key_ser:Buffer) -> Buff
     set_server_key(server_key);
 
     let now = Instant::now();
-    let gtresult = cipher_a.gt(cipher_b.clone());
+    let gtresult = cipher_a.clone().gt(cipher_b.clone());
     let elapsed = now.elapsed();
     println!("Elapsed: {:.2?}", elapsed);
     let mut gtresult_ser = vec![];

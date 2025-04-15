@@ -10,7 +10,7 @@ crate-type = ["cdylib"]
 napi = "2"
 napi-derive = "2"
 #tfhe = { version = "~1.0.0", features = ["integer", "gpu" ] }
-tfhe = { version = "~1.0.0", features = ["integer"] }
+tfhe = { version = "*", features = ["integer"] }
 
 [build-dependencies]
 napi-build = "1"
