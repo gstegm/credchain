@@ -38,6 +38,7 @@ async function computeResult(encoder, evaluator, cipher1, cipher2) {
     const bitSizeFloat = 40;
     const rand = generateSecureRandomFloat();
     const pRand = encoder.encode(Float64Array.from([rand]), Math.pow(2, bitSizeFloat));
+    // the following function calculates (cipher1 - cipher2)
     const subResult = evaluator.sub(cipher1, cipher2);
     const mutResult = evaluator.multiplyPlain(subResult, pRand);
 
