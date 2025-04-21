@@ -5,63 +5,18 @@ const crypto = require("crypto");
 const { subtle } = globalThis.crypto;
 
 async function studentMain(degreeIssuanceTimestamp, setupData, signature, sigPubKey) {
-    const seal = await SEAL();
-    const securityLevel = seal.SecurityLevel.tc128;
-    const bitSizeFloat = 40;
-    const rand = generateSecureRandomFloat();
 
-    // Load the context with saved parameters
-    const parmsFromFile = seal.EncryptionParameters();
-    parmsFromFile.load(setupData.parms);
+    const pDegreeIssuanceTimestamp = parseInt(degreeIssuanceTimestamp);
+    const cDegreeIssuanceTimestamp = tfhe_rs.encpub(pDegreeIssuanceTimestamp, setupData.publicKey);
+    const cDegreeThresholdTimestamp = setupData.cipherTextThreshold;
 
-    const context = seal.Context(parmsFromFile, true, securityLevel);
-
-    const publicKeyFromFile = seal.PublicKey();
-    publicKeyFromFile.load(context, setupData.publicKey);
-
-    const cDegreeThresholdTimestamp = seal.CipherText();
-    cDegreeThresholdTimestamp.load(context, setupData.cipherTextThreshold);
-
-    // const signaturePubKey = seal.CipherText();
-    // signaturePubKey.load(context, setupData.signturePublicKey);
-
-    // const signature = seal.CipherText();
-    // signature.load(context, setupData.ciphertextSignature);
-
-    // console.log('cipher at student', setupData.cipherTextThreshold);
-
-    // console.log('setupdata', setupData);
-
-    // verify signature
-    const sigVerify = await signatureVerify(sigPubKey, signature, setupData.cipherTextThreshold);
-    // if (!sigVerify) { return false }
-
-    // console.log('signature', sigVerify)
-
-    const evaluator = seal.Evaluator(context);
-    const ckksEncoder = seal.CKKSEncoder(context);
-    const encryptor = seal.Encryptor(context, publicKeyFromFile);
-
-    const pRand = seal.PlainText();
-    ckksEncoder.encode(Float64Array.from([rand]), Math.pow(2, bitSizeFloat), pRand);
-
-    const pDegreeIssuanceTimestamp = seal.PlainText();
-    ckksEncoder.encode(Float64Array.from([degreeIssuanceTimestamp]), Math.pow(2, bitSizeFloat), pDegreeIssuanceTimestamp);
-
-    const cDegreeIssuanceTimestamp = seal.CipherText();
-    encryptor.encrypt(pDegreeIssuanceTimestamp, cDegreeIssuanceTimestamp);
-
-    const cResultSubtraction = seal.CipherText();
-    evaluator.sub(cDegreeThresholdTimestamp, cDegreeIssuanceTimestamp, cResultSubtraction);
-
-    const cResultMultiplication = seal.CipherText();
-    evaluator.multiplyPlain(cResultSubtraction, pRand, cResultMultiplication);
+    const cResultGreaterThan = tfhe_rs.gt(cDegreeThresholdTimestamp, cDegreeIssuanceTimestamp, setupData.evaluator)
 
     // console.log('student result', cResultMultiplication)
 
     // Create the JSON object
     const studentData = {
-        cipherTextResult: cResultMultiplication.save(),
+        cipherTextResult: cResultGreaterThan,
     };
 
     // Save the results to file

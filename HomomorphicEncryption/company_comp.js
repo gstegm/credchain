@@ -1,40 +1,18 @@
-const SEAL = require('node-seal');
 const tfhe_rs = require('../tfhe_comparison.node')
 const fs = require('fs');
 const { subtle } = globalThis.crypto;
 
 async function companySetup(degreeThresholdTimestamp) {
-    const seal = await SEAL();
-    const schemeType = seal.SchemeType.ckks;
-    const securityLevel = seal.SecurityLevel.tc128;
-    const polyModulusDegree = 8192;
-    const bitSizes = [60,20,20,20,20,60];
-    const bitSizeFloat = 40;
-
-    const parms = seal.EncryptionParameters(schemeType);
-    parms.setPolyModulusDegree(polyModulusDegree);
-    parms.setCoeffModulus(seal.CoeffModulus.Create(polyModulusDegree, Int32Array.from(bitSizes)));
-
-    const context = seal.Context(parms, true, securityLevel);
-    if (!context.parametersSet()) {
-        throw new Error('Could not set the parameters in the given context. Please try different encryption parameters.');
-    }
-
-    const keyGenerator = seal.KeyGenerator(context);
-    const secretKey = keyGenerator.secretKey();
-    const publicKey = keyGenerator.createPublicKey();
-
-    const ckksEncoder = seal.CKKSEncoder(context);
-    const encryptor = seal.Encryptor(context, publicKey);
-
+    const keys = tfhe_rs.getkeys();
+    const decryptor = keys[0];
+    const evaluator = keys[1];
+    const encryptor = keys[2];
 
     // Encode number
-    const pDegreeThresholdTimestamp = seal.PlainText();
-    ckksEncoder.encode(Float64Array.from([degreeThresholdTimestamp]), Math.pow(2, bitSizeFloat), pDegreeThresholdTimestamp);
+    const pDegreeThresholdTimestamp = parseInt(degreeThresholdTimestamp);
 
     // Encrypt PlainText
-    const cDegreeThresholdTimestamp = seal.CipherText();
-    encryptor.encrypt(pDegreeThresholdTimestamp, cDegreeThresholdTimestamp);
+    const cDegreeThresholdTimestamp = tfhe_rs.encpub(pDegreeThresholdTimestamp, encryptor);
 
     // sign the ciphertext
     let signingKeys = await generateSignatureKeys();
@@ -42,61 +20,32 @@ async function companySetup(degreeThresholdTimestamp) {
 
     // Create the JSON objects
     const companySetupData = {
-        parms: parms.save(),
-        publicKey: publicKey.save(),
-        cipherTextThreshold: cDegreeThresholdTimestamp.save(),
+        evaluator: evaluator,
+        publicKey: encryptor,
+        cipherTextThreshold: cDegreeThresholdTimestamp,
         ciphertextSignature: signature,
         signaturePublicKey: signingKeys.publicKey,
     };
 
     const companySecretKey = {
-        secretKey: secretKey.save()
-    }
+        secretKey: decryptor
+    };
 
     // Save the results to file
-    fs.writeFileSync('./HomomorphicEncryption/companySetupData.json', JSON.stringify(companySetupData));
-    fs.writeFileSync('./HomomorphicEncryption/companySecretKey.json', JSON.stringify(companySecretKey));
+    //fs.writeFileSync('./HomomorphicEncryption/companySetupData.json', JSON.stringify(companySetupData));
+    //fs.writeFileSync('./HomomorphicEncryption/companySecretKey.json', JSON.stringify(companySecretKey));
 
     return { companySetupData, companySecretKey };
 }
 
 async function companyMain(studentData, setupData, sk) {
-    const seal = await SEAL();
-    const securityLevel = seal.SecurityLevel.tc128;
-
     try {
-        // Load the context with saved parameters
-        const parmsFromFile = seal.EncryptionParameters();
-        parmsFromFile.load(setupData.parms);
+        const resultStudent = tfhe_rs.dec(studentData.cipherTextResult, sk.secretKey);
+        console.log("\tDecoded Result:", resultStudent);
 
-        const context = seal.Context(parmsFromFile, true, securityLevel);
-
-        // verifier public key
-        const publicKey = seal.PublicKey();
-        publicKey.load(context, setupData.publicKey);
-
-        // verifier secret key
-        const secretKey = seal.SecretKey();
-        secretKey.load(context, sk.secretKey);
-
-        const decryptor = seal.Decryptor(context, secretKey);
-        const ckksEncoder = seal.CKKSEncoder(context);
-
-        // console.log('studentdata', studentData.cipherTextResult);
-
-        const cResultStudent = seal.CipherText();
-        cResultStudent.load(context, studentData.cipherTextResult);
-
-        const pResultStudent = seal.PlainText();
-        decryptor.decrypt(cResultStudent, pResultStudent);
-
-        const resultStudent = ckksEncoder.decode(pResultStudent);
-        console.log("\tDecoded Result:", resultStudent[0]);
-
-        const result = parseFloat(resultStudent[0]);
-        if (result <= 0) {
-            console.log("\tVALID Issuance Date");
-            return true;
+        if (!resultStudent) {
+        console.log("\tVALID Issuance Date");
+        return true;
         } else {
             console.log("\tINVALID Issuance Date");
             return false;
