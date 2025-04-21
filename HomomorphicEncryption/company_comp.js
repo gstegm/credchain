@@ -31,9 +31,11 @@ async function companySetup(degreeThresholdTimestamp) {
         secretKey: decryptor
     };
 
+    const base64encryptor = encryptor.toString('base64');
     // Save the results to file
-    //fs.writeFileSync('./HomomorphicEncryption/companySetupData.json', JSON.stringify(companySetupData));
-    //fs.writeFileSync('./HomomorphicEncryption/companySecretKey.json', JSON.stringify(companySecretKey));
+    fs.writeFileSync('./HomomorphicEncryption/companySetupData.json', JSON.stringify(companySetupData));
+    fs.writeFileSync('./HomomorphicEncryption/companySecretKey.json', JSON.stringify(companySecretKey));
+
 
     return { companySetupData, companySecretKey };
 }

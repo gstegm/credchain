@@ -9,6 +9,6 @@
  */
 export declare function getKeys(): Array<Buffer>
 export declare function encrypt(plain: number, clientKeySer: Buffer): Buffer
-export declare function encryptPublicKey(plain: number, publicKeySer: Buffer): Buffer
+export declare function encryptPublicKey(plain: number, compressedPublicKeySer: Buffer): Buffer
 export declare function greaterThan(cipherASer: Buffer, cipherBSer: Buffer, serverKeySer: Buffer): Buffer
 export declare function decrypt(cipherSer: Buffer, clientKeySer: Buffer): boolean
