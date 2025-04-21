@@ -5,7 +5,7 @@ const { subtle } = globalThis.crypto;
 
 // function to generate encryption keys for HE
 async function generateEncryptionKeys() {
-    const keys = tfhe_rs.getkeys();
+    const keys = tfhe_rs.getKeys();
     const decryptor = keys[0];
     const evaluator = keys[1];
     const encryptor = keys[2];
@@ -41,13 +41,13 @@ async function verifierSign(key, data) {
 
 async function verifierEncrypt(value, encryptor) {
     // const seal = await SEAL();
-    const cipher = tfhe_rs.encpub(value, encryptor);
+    const cipher = tfhe_rs.encryptPublicKey(value, encryptor);
     //console.log('size cipher', Buffer.byteLength(JSON.stringify(cipher.save())))
     return cipher;
 }
 
 async function verifierDecrypt(value, decryptor) {
-    const resultStudent = tfhe_rs.dec(value, decryptor);
+    const resultStudent = tfhe_rs.decrypt(value, decryptor);
     console.log("\tDecoded Result:", resultStudent);
     if (!resultStudent) {
         console.log("\tVALID Issuance Date");
