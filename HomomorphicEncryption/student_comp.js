@@ -10,6 +10,9 @@ async function studentMain(degreeIssuanceTimestamp, setupData, signature, sigPub
     const cDegreeIssuanceTimestamp = tfhe_rs.encryptPublicKey(pDegreeIssuanceTimestamp, setupData.publicKey);
     const cDegreeThresholdTimestamp = setupData.cipherTextThreshold;
 
+    // verify signature
+    const sigVerify = await signatureVerify(sigPubKey, signature, setupData.cipherTextThreshold);
+
     const cResultGreaterThan = tfhe_rs.greaterThan(cDegreeThresholdTimestamp, cDegreeIssuanceTimestamp, setupData.evaluator)
 
     // console.log('student result', cResultMultiplication)
