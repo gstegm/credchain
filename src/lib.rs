@@ -16,9 +16,8 @@ use std::time::Instant;
 /// module registration is done by the runtime, no need to explicitly do it now.
 /// run $napi build
 #[napi]
-fn getkeys() -> Vec<Buffer> {
+fn get_keys() -> Vec<Buffer> {
     let config = ConfigBuilder::default().build();
-
     let (client_key, server_key) = generate_keys(config);
     //let client_key= ClientKey::generate(config);
     //let server_key = CompressedServerKey::new(&client_key);
@@ -29,18 +28,15 @@ fn getkeys() -> Vec<Buffer> {
     let mut server_key_ser = vec![];
     safe_serialize(&server_key, &mut server_key_ser, 1 << 30).unwrap();
     let mut public_key_ser = vec![];
-    safe_serialize(&public_key, &mut public_key_ser, 1 << 40).unwrap();
+    safe_serialize(&public_key, &mut public_key_ser, 1 << 35).unwrap();
 
     return vec![client_key_ser.into(), server_key_ser.into(), public_key_ser.into()];
 }
 
 #[napi]
-fn enc(plain: i64, client_key_ser:Buffer) -> Buffer {
-    println!("starting deserialization");
+fn encrypt(plain: i64, client_key_ser:Buffer) -> Buffer {
     let client_key_ser: Vec<u8> = client_key_ser.into();
     let client_key: ClientKey = safe_deserialize(client_key_ser.as_slice(), 1 << 30).unwrap();
-    println!("ending deserialization");
-   
     let cipher = FheInt64::encrypt(plain, &client_key);
     let mut cipher_ser = vec![];
     safe_serialize(&cipher, &mut cipher_ser, 1 << 20).unwrap();
@@ -49,19 +45,18 @@ fn enc(plain: i64, client_key_ser:Buffer) -> Buffer {
 }
 
 #[napi]
-fn encpub(plain: i64, public_key_ser:Buffer) -> Buffer {
+fn encrypt_public_key(plain: i64, public_key_ser:Buffer) -> Buffer {
     let public_key_ser: Vec<u8> = public_key_ser.into();
     let public_key: PublicKey = safe_deserialize(public_key_ser.as_slice(), 1 << 40).unwrap();
    
     let cipher = FheInt64::encrypt(plain, &public_key);
     let mut cipher_ser = vec![];
     safe_serialize(&cipher, &mut cipher_ser, 1 << 20).unwrap();
-
     return cipher_ser.into();
 }
 
 #[napi]
-fn gt(cipher_a_ser: Buffer, cipher_b_ser: Buffer, server_key_ser:Buffer) -> Buffer {
+fn greater_than(cipher_a_ser: Buffer, cipher_b_ser: Buffer, server_key_ser:Buffer) -> Buffer {
     let server_key_ser: Vec<u8> = server_key_ser.into();
     let cipher_a_ser: Vec<u8> = cipher_a_ser.into();
     let cipher_b_ser: Vec<u8> = cipher_b_ser.into();
@@ -75,9 +70,9 @@ fn gt(cipher_a_ser: Buffer, cipher_b_ser: Buffer, server_key_ser:Buffer) -> Buff
     set_server_key(server_key);
 
     let now = Instant::now();
-    let gtresult = cipher_a.clone().gt(cipher_b.clone());
+    let gtresult = cipher_a.gt(cipher_b.clone());
     let elapsed = now.elapsed();
-    println!("Elapsed: {:.2?}", elapsed);
+    //println!("Elapsed: {:.2?}", elapsed);
     let mut gtresult_ser = vec![];
     safe_serialize(&gtresult, &mut gtresult_ser, 1 << 20).unwrap();
 
@@ -85,7 +80,7 @@ fn gt(cipher_a_ser: Buffer, cipher_b_ser: Buffer, server_key_ser:Buffer) -> Buff
 }
 
 #[napi]
-fn dec(cipher_ser: Buffer, client_key_ser:Buffer) -> bool {
+fn decrypt(cipher_ser: Buffer, client_key_ser:Buffer) -> bool {
     let client_key_ser: Vec<u8> = client_key_ser.into();
     let cipher_ser: Vec<u8> = cipher_ser.into();
 
