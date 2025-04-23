@@ -7,8 +7,8 @@
  * module registration is done by the runtime, no need to explicitly do it now.
  * run $napi build
  */
-export declare function getKeys(): Array<Buffer>
-export declare function encrypt(plain: number, clientKeySer: Buffer): Buffer
-export declare function encryptPublicKey(plain: number, compressedPublicKeySer: Buffer): Buffer
-export declare function greaterThan(cipherASer: Buffer, cipherBSer: Buffer, serverKeySer: Buffer): Buffer
-export declare function decrypt(cipherSer: Buffer, clientKeySer: Buffer): boolean
+export declare function getKeys(): Array<Array<number>>
+export declare function encrypt(plain: number, clientKeySer: Array<number>): Array<number>
+export declare function encryptPublicKey(plain: number, compressedPublicKeySer: Array<number>): Array<number>
+export declare function greaterThan(cipherASer: Array<number>, cipherBSer: Array<number>, compressedServerKeySer: Array<number>): Array<number>
+export declare function decrypt(cipherSer: Array<number>, clientKeySer: Array<number>): boolean
