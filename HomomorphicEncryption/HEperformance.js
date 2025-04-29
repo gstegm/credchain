@@ -1,6 +1,6 @@
-const { studentMain } = require("./student.js");
-const { companyMain } = require("./company.js");
-const { companySetup } = require("./company");
+const { verifierSetUp, verifierProve } = require("./verifier.js");
+const { proverCalculate } = require("./prover.js");
+// const { companySetup } = require("./company");
 const pidusage = require('pidusage');
 const { performance, PerformanceObserver } = require('perf_hooks');
 const fs = require('fs');
@@ -38,104 +38,117 @@ function calculateStats(values) {
 
 async function HEperformance(runs) {
     console.log("Running Homomorphic Encryption Performance Test.")
-    const obs = new PerformanceObserver((items) => {});
+    const obs = new PerformanceObserver(() => {});
     obs.observe({ entryTypes: ['measure'] });
 
-    let companySetupStats = [];
-    let studentMainStats = [];
-    let companyMainStats = [];
+    // let companySetupStats = [];
+    // let studentMainStats = [];
+    // let companyMainStats = [];
+
+    let verifierSetUpStat = [];     // step 1: verifier sets up params, encrypts, signs
+    let proverStat = [];            // step 2: prover verifies sig, computes result
+    let verifierVerifyStat = [];    // step 3: verifier proves the result
 
     for (let i = 0; i < runs; i++) {
         console.log(`Run ${i + 1}/${runs}:`);
 
-        const setupStats = await measureFunctionExecution(companySetup, 'companySetup', degreeThresholdTimestamp);
-        companySetupStats.push(setupStats);
+        const generateVerifierSetUpStat = await measureFunctionExecution(
+            verifierSetUp,
+            'verifierSetUp',
+            degreeThresholdTimestamp
+        );
+        // remove result from statistics stack
+        verifierSetUpStat.push({cpu: generateVerifierSetUpStat.cpu, memory: generateVerifierSetUpStat.memory, duration: generateVerifierSetUpStat.duration});
 
-        // console.log('studentStats', setupStats);
-
-        const studentStats = await measureFunctionExecution(
-            studentMain,
-            'studentMain',
+        const generateProverStat = await measureFunctionExecution(
+            proverCalculate,
+            'proverCalculate',
             degreeIssuanceTimestamp,
-            setupStats.result.companySetupData,
-            setupStats.result.companySetupData.ciphertextSignature,
-            setupStats.result.companySetupData.signaturePublicKey,
+            generateVerifierSetUpStat.result.signPublicKey,
+            generateVerifierSetUpStat.result.verifierSignature,
+            generateVerifierSetUpStat.result.thresholdCiphertext,
+            generateVerifierSetUpStat.result.verifierEncryptor,
+            generateVerifierSetUpStat.result.proverEvaluator,
         );
-        studentMainStats.push(studentStats);
+        proverStat.push({cpu: generateProverStat.cpu, memory: generateProverStat.memory, duration: generateProverStat.duration});
 
-        // console.log('studentStats', studentStats.result);
-
-        // studentStats.result -> there's no result, studentStats returns false
-
-        const companyStats = await measureFunctionExecution(
-            companyMain,
-            'companyMain',
-            studentStats.result,
-            setupStats.result.companySetupData,
-            setupStats.result.companySecretKey,
+        const generateVerifierVerifyStat = await measureFunctionExecution(
+            verifierProve,
+            'verifierProve',
+            generateProverStat.result,
+            generateVerifierSetUpStat.result.verifierDecryptor,
         );
-        companyMainStats.push(companyStats);
+        verifierVerifyStat.push({cpu: generateVerifierVerifyStat.cpu, memory: generateVerifierVerifyStat.memory, duration: generateVerifierVerifyStat.duration});
+    };
 
-        // console.log('studentStats', companyStats.result);
-    }
+    // measure Step 1
+    const verifierSetUpCPU = verifierSetUpStat.map(stat => stat.cpu);
+    const verifierSetUpMemory = verifierSetUpStat.map(stat => stat.memory);
+    const verifierSetUpTime = verifierSetUpStat.map(stat => stat.duration);
 
-    const companySetupCPU = companySetupStats.map(stat => stat.cpu);
-    const companySetupMemory = companySetupStats.map(stat => stat.memory);
-    const companySetupDuration = companySetupStats.map(stat => stat.duration);
+    // measure Step 2
+    const proverCPU = proverStat.map(stat => stat.cpu);
+    const proverMemory =  proverStat.map(stat => stat.memory);
+    const proverTime =  proverStat.map(stat => stat.duration);
 
-    const studentMainCPU = studentMainStats.map(stat => stat.cpu);
-    const studentMainMemory = studentMainStats.map(stat => stat.memory);
-    const studentMainDuration = studentMainStats.map(stat => stat.duration);
+    // measure Step 3
+    const verifierVerifyCPU = verifierVerifyStat.map(stat => stat.cpu);
+    const verifierVerifyMemory = verifierVerifyStat.map(stat => stat.memory);
+    const verifierVerifyTime = verifierVerifyStat.map(stat => stat.duration);
 
-    const companyMainCPU = companyMainStats.map(stat => stat.cpu);
-    const companyMainMemory = companyMainStats.map(stat => stat.memory);
-    const companyMainDuration = companyMainStats.map(stat => stat.duration);
 
-    const companySetupCPUStats = calculateStats(companySetupCPU);
-    const companySetupMemoryStats = calculateStats(companySetupMemory);
-    const companySetupDurationStats = calculateStats(companySetupDuration);
+    const verifierSetUpCPUStats = calculateStats(verifierSetUpCPU);
+    const verifierSetUpMemoryStats = calculateStats(verifierSetUpMemory);
+    const verifierSetUpTimeStats = calculateStats(verifierSetUpTime);
 
-    const studentMainCPUStats = calculateStats(studentMainCPU);
-    const studentMainMemoryStats = calculateStats(studentMainMemory);
-    const studentMainDurationStats = calculateStats(studentMainDuration);
+    const proverCPUStats = calculateStats(proverCPU);
+    const proverMemoryStats = calculateStats(proverMemory);
+    const proverTimeStats = calculateStats(proverTime);
 
-    const companyMainCPUStats = calculateStats(companyMainCPU);
-    const companyMainMemoryStats = calculateStats(companyMainMemory);
-    const companyMainDurationStats = calculateStats(companyMainDuration);
+    const verifierVerifyCPUStats = calculateStats(verifierVerifyCPU);
+    const verifierVerifyMemoryStats = calculateStats(verifierVerifyMemory);
+    const verifierVerifyTimeStats = calculateStats(verifierVerifyTime);
 
-    console.log("\nCompanySetup Stats:");
-    console.log(`CPU:\n\tAvg: ${companySetupCPUStats.avg}%, Max: ${companySetupCPUStats.max}%, Min: ${companySetupCPUStats.min}%, ZEROs: ${companySetupCPUStats.zeroCount}`);
-    console.log(`Memory:\n\tAvg: ${companySetupMemoryStats.avg}MB, Max: ${companySetupMemoryStats.max}MB, Min: ${companySetupMemoryStats.min}MB`);
-    console.log(`Duration:\n\tAvg: ${companySetupDurationStats.avg}ms, Max: ${companySetupDurationStats.max}ms, Min: ${companySetupDurationStats.min}ms`);
+    console.log("\nVerifier Setup Stats:");
+    console.log(`CPU:\n\tAvg: ${verifierSetUpCPUStats.avg}%, Max: ${verifierSetUpCPUStats.max}%, Min: ${verifierSetUpCPUStats.min}%, ZEROs: ${verifierSetUpCPUStats.zeroCount}`);
+    console.log(`Memory:\n\tAvg: ${verifierSetUpMemoryStats.avg}MB, Max: ${verifierSetUpMemoryStats.max}MB, Min: ${verifierSetUpMemoryStats.min}MB`);
+    console.log(`Duration:\n\tAvg: ${verifierSetUpTimeStats.avg}ms, Max: ${verifierSetUpTimeStats.max}ms, Min: ${verifierSetUpTimeStats.min}ms`);
 
-    console.log("\nStudentMain Stats:");
-    console.log(`CPU:\n\tAvg: ${studentMainCPUStats.avg}%, Max: ${studentMainCPUStats.max}%, Min: ${studentMainCPUStats.min}%, ZEROs: ${studentMainCPUStats.zeroCount}`);
-    console.log(`Memory:\n\tAvg: ${studentMainMemoryStats.avg}MB, Max: ${studentMainMemoryStats.max}MB, Min: ${studentMainMemoryStats.min}MB`);
-    console.log(`Duration:\n\tAvg: ${studentMainDurationStats.avg}ms, Max: ${studentMainDurationStats.max}ms, Min: ${studentMainDurationStats.min}ms`);
+    console.log("\nProver Computation Stats:");
+    console.log(`CPU:\n\tAvg: ${proverCPUStats.avg}%, Max: ${proverCPUStats.max}%, Min: ${proverCPUStats.min}%, ZEROs: ${proverCPUStats.zeroCount}`);
+    console.log(`Memory:\n\tAvg: ${proverMemoryStats.avg}MB, Max: ${proverMemoryStats.max}MB, Min: ${proverMemoryStats.min}MB`);
+    console.log(`Duration:\n\tAvg: ${proverTimeStats.avg}ms, Max: ${proverTimeStats.max}ms, Min: ${proverTimeStats.min}ms`);
 
-    console.log("\nCompanyMain Stats:");
-    console.log(`CPU:\n\tAvg: ${companyMainCPUStats.avg}%, Max: ${companyMainCPUStats.max}%, Min: ${companyMainCPUStats.min}%, ZEROs: ${companyMainCPUStats.zeroCount}`);
-    console.log(`Memory:\n\tAvg: ${companyMainMemoryStats.avg}MB, Max: ${companyMainMemoryStats.max}MB, Min: ${companyMainMemoryStats.min}MB`);
-    console.log(`Duration:\n\tAvg: ${companyMainDurationStats.avg}ms, Max: ${companyMainDurationStats.max}ms, Min: ${companyMainDurationStats.min}ms`);
+    console.log("\nVerifier Verify Stats:");
+    console.log(`CPU:\n\tAvg: ${verifierVerifyCPUStats.avg}%, Max: ${verifierVerifyCPUStats.max}%, Min: ${verifierVerifyCPUStats.min}%, ZEROs: ${verifierVerifyCPUStats.zeroCount}`);
+    console.log(`Memory:\n\tAvg: ${verifierVerifyMemoryStats.avg}MB, Max: ${verifierVerifyMemoryStats.max}MB, Min: ${verifierVerifyMemoryStats.min}MB`);
+    console.log(`Duration:\n\tAvg: ${verifierVerifyTimeStats.avg}ms, Max: ${verifierVerifyTimeStats.max}ms, Min: ${verifierVerifyTimeStats.min}ms`);
 
-    // Prepare data for CSV
+
     const csvData = [];
     for (let i = 0; i < runs; i++) {
         csvData.push({
             run: i + 1,
-            companySetupCPU: companySetupCPU[i],
-            companySetupMemory: companySetupMemory[i],
-            companySetupDuration: companySetupDuration[i],
-            studentMainCPU: studentMainCPU[i],
-            studentMainMemory: studentMainMemory[i],
-            studentMainDuration: studentMainDuration[i],
-            companyMainCPU: companyMainCPU[i],
-            companyMainMemory: companyMainMemory[i],
-            companyMainDuration: companyMainDuration[i]
+            verifierSetUpCPU: verifierSetUpCPU[i],
+            verifierSetUpMemory: verifierSetUpMemory[i],
+            verifierSetUpTime: verifierSetUpTime[i],
+            proverCPU: proverCPU[i],
+            proverMemory: proverMemory[i],
+            proverTime: proverTime[i],
+            verifierVerifyCPU: verifierVerifyCPU[i],
+            verifierVerifyMemory: verifierVerifyMemory[i],
+            verifierVerifyTime: verifierVerifyTime[i],
+            // verifierCPUAverage: (verifierSetUpCPU[i] + verifierVerifyCPU[i]) / 2,
+            // proverCPUAverage:
         });
-    }
+    };
 
-    const fields = ['run', 'companySetupCPU', 'companySetupMemory', 'companySetupDuration', 'studentMainCPU', 'studentMainMemory', 'studentMainDuration', 'companyMainCPU', 'companyMainMemory', 'companyMainDuration'];
+    const fields = [
+        'run',
+        'verifierSetUpCPU', 'verifierSetUpMemory', 'verifierSetUpTime',
+        'proverCPU', 'proverMemory', 'proverTime',
+        'verifierVerifyCPU', 'verifierVerifyMemory', 'verifierVerifyTime'
+    ];
     const json2csvParser = new Parser({ fields });
     const csv = json2csvParser.parse(csvData);
 
