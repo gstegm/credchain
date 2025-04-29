@@ -28,7 +28,8 @@ async function computeResult(evaluator, cipher1, cipher2) {
 }
 
 async function proverEncrypt(value, encryptor) {
-    const cipher = tfhe_rs.encryptPublicKey(value, encryptor);
+    const pValue = parseInt(value);
+    const cipher = await tfhe_rs.encryptPublicKey(pValue, encryptor);
     return cipher;
 }
 

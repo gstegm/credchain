@@ -41,7 +41,8 @@ async function verifierSign(key, data) {
 
 async function verifierEncrypt(value, encryptor) {
     // const seal = await SEAL();
-    const cipher = tfhe_rs.encryptPublicKey(value, encryptor);
+    const pValue = parseInt(value);
+    const cipher = tfhe_rs.encryptPublicKey(pValue, encryptor);
     //console.log('size cipher', Buffer.byteLength(JSON.stringify(cipher.save())))
     return cipher;
 }
@@ -65,7 +66,7 @@ async function verifierSetUp(timestamp) {
 
     let encryptor = instances.encryptor;
     let decryptor = instances.decryptor;
-    let evaluator   = instances.evaluator;
+    let evaluator  = instances.evaluator;
 
     let signPublicKey = signingKeys.publicKey;
     let signPrivateKey = signingKeys.privateKey;

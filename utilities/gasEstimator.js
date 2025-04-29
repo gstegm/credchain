@@ -25,8 +25,8 @@ args.forEach(arg => {
 const paths = [
     // './HomomorphicEncryption/companySetupData.json',
     // './HomomorphicEncryption/studentData.json',
-    './HomomorphicEncryption/verifierData.json',
-    // './HomomorphicEncryption/proverData.json',
+    //'./HomomorphicEncryption/verifierData.json',
+    './HomomorphicEncryption/proverData.json',
     // './ZKP/verificationKey.json',
     // './ZKP/proof.json'
 ];

@@ -57,7 +57,8 @@ async function HEperformance(runs) {
             'verifierSetUp',
             degreeThresholdTimestamp
         );
-        verifierSetUpStat.push(generateVerifierSetUpStat);
+        // remove result from statistics stack
+        verifierSetUpStat.push({cpu: generateVerifierSetUpStat.cpu, memory: generateVerifierSetUpStat.memory, duration: generateVerifierSetUpStat.duration});
 
         const generateProverStat = await measureFunctionExecution(
             proverCalculate,
@@ -69,7 +70,7 @@ async function HEperformance(runs) {
             generateVerifierSetUpStat.result.verifierEncryptor,
             generateVerifierSetUpStat.result.proverEvaluator,
         );
-        proverStat.push(generateProverStat);
+        proverStat.push({cpu: generateProverStat.cpu, memory: generateProverStat.memory, duration: generateProverStat.duration});
 
         const generateVerifierVerifyStat = await measureFunctionExecution(
             verifierProve,
@@ -77,7 +78,7 @@ async function HEperformance(runs) {
             generateProverStat.result,
             generateVerifierSetUpStat.result.verifierDecryptor,
         );
-        verifierVerifyStat.push(generateVerifierVerifyStat);
+        verifierVerifyStat.push({cpu: generateVerifierVerifyStat.cpu, memory: generateVerifierVerifyStat.memory, duration: generateVerifierVerifyStat.duration});
     };
 
     // measure Step 1
