@@ -3,6 +3,64 @@ const tfhe_rs = require('../tfhe_comparison.node')
 const fs = require('fs');
 const { subtle } = globalThis.crypto;
 
+async function companySetup(degreeThresholdTimestamp) {
+    const keys = tfhe_rs.getKeys();
+    const decryptor = keys[0];
+    const evaluator = keys[1];
+    const encryptor = keys[2];
+
+    // Encode number
+    const pDegreeThresholdTimestamp = parseInt(degreeThresholdTimestamp);
+
+    // Encrypt PlainText
+    const cDegreeThresholdTimestamp = tfhe_rs.encryptPublicKey(pDegreeThresholdTimestamp, encryptor);
+
+    // sign the ciphertext
+    let signingKeys = await generateSignatureKeys();
+    let signature = await verifierSign(signingKeys.privateKey, cDegreeThresholdTimestamp);
+
+    // Create the JSON objects
+    const companySetupData = {
+        evaluator: evaluator,
+        publicKey: encryptor,
+        cipherTextThreshold: cDegreeThresholdTimestamp,
+        ciphertextSignature: signature,
+        signaturePublicKey: signingKeys.publicKey,
+    };
+
+    const companySecretKey = {
+        secretKey: decryptor
+    };
+
+    const base64encryptor = encryptor.toString('base64');
+    // Save the results to file
+    fs.writeFileSync('./HomomorphicEncryption/companySetupData.json', JSON.stringify(companySetupData));
+    fs.writeFileSync('./HomomorphicEncryption/companySecretKey.json', JSON.stringify(companySecretKey));
+
+    return { companySetupData, companySecretKey };
+}
+
+async function companyMain(studentData, setupData, sk) {
+    try {
+        const resultStudent = tfhe_rs.decrypt(studentData.cipherTextResult, sk.secretKey);
+        console.log("\tDecoded Result:", resultStudent);
+
+        if (!resultStudent) {
+        console.log("\tVALID Issuance Date");
+        return true;
+        } else {
+            console.log("\tINVALID Issuance Date");
+            return false;
+        }
+
+    } catch (error) {
+        console.log("\tIncompatible encryption parameters or ciphertext format:", error.message);
+        console.log("\tTAMPERED DATA");
+        return false
+    }
+
+}
+
 // function to generate encryption keys for HE
 async function generateEncryptionKeys() {
     const keys = tfhe_rs.getKeys();
@@ -89,4 +147,4 @@ async function verifierProve(proverVesult, decryptor) {
     return result;
 }
 
-module.exports = { verifierSetUp, verifierProve, generateEncryptionKeys, generateSignatureKeys, verifierEncrypt, verifierDecrypt, verifierSign };
+module.exports = { verifierSetUp, verifierProve, generateEncryptionKeys, generateSignatureKeys, verifierEncrypt, verifierDecrypt, verifierSign, companySetup, companyMain };

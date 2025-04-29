@@ -4,6 +4,30 @@ const fs = require('fs');
 const crypto = require("crypto");
 const { subtle } = globalThis.crypto;
 
+async function studentMain(degreeIssuanceTimestamp, setupData, signature, sigPubKey) {
+
+    const pDegreeIssuanceTimestamp = parseInt(degreeIssuanceTimestamp);
+    const cDegreeIssuanceTimestamp = tfhe_rs.encryptPublicKey(pDegreeIssuanceTimestamp, setupData.publicKey);
+    const cDegreeThresholdTimestamp = setupData.cipherTextThreshold;
+
+    // verify signature
+    const sigVerify = await signatureVerify(sigPubKey, signature, setupData.cipherTextThreshold);
+
+    const cResultGreaterThan = tfhe_rs.greaterThan(cDegreeThresholdTimestamp, cDegreeIssuanceTimestamp, setupData.evaluator)
+
+    // console.log('student result', cResultMultiplication)
+
+    // Create the JSON object
+    const studentData = {
+        cipherTextResult: cResultGreaterThan,
+    };
+
+    // Save the results to file
+    fs.writeFileSync('./HomomorphicEncryption/studentData.json', JSON.stringify(studentData));
+
+    return studentData;
+}
+
 // verify signed message sent by company with its public key
 async function signatureVerify(pubKey, signature, data) {
     const ec = new TextEncoder();
@@ -43,4 +67,4 @@ async function proverCalculate(timestamp, signPublicKey, signature, thresholdCip
 }
 
 //module.exports = { proverCalculate, signatureVerify, generateEvaluator, computeResult, proverEncrypt };
-module.exports = { proverCalculate, signatureVerify, computeResult, proverEncrypt };
+module.exports = { studentMain, proverCalculate, signatureVerify, computeResult, proverEncrypt };
