@@ -1,8 +1,8 @@
 const SEAL = require('node-seal');
 const { web3, assert, artifacts } = require("hardhat");
 const { performance, PerformanceObserver } = require('perf_hooks');
-const { generateEncryptionKeys, generateSignatureKeys, verifierEncrypt, verifierDecrypt, verifierSign } = require("../HomomorphicEncryption/verifier_comp.js");
-const { signatureVerify, computeResult, proverEncrypt } = require("../HomomorphicEncryption/prover_comp.js");
+const { generateEncryptionKeys, generateSignatureKeys, verifierEncrypt, verifierDecrypt, verifierSign } = require("../HomomorphicEncryption/verifier.js");
+const { signatureVerify, computeResult, proverEncrypt } = require("../HomomorphicEncryption/prover.js");
 
 const DID = artifacts.require("DID");
 const Cred = artifacts.require("Credentials");

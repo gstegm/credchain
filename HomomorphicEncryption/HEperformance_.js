@@ -1,5 +1,5 @@
-const { verifierSetUp, verifierProve } = require("./verifier_comp.js");
-const { proverCalculate } = require("./prover_comp.js");
+const { verifierSetUp, verifierProve } = require("./verifier.js");
+const { proverCalculate } = require("./prover.js");
 // const { companySetup } = require("./company");
 const pidusage = require('pidusage');
 const { performance, PerformanceObserver } = require('perf_hooks');
