@@ -1,5 +1,5 @@
-const { generateZKP } = require("./student.js");
-const { verifyZKP } = require("./company.js");
+const { generateZKP } = require("./prover.js");
+const { verifyZKP } = require("./verifier.js");
 const pidusage = require('pidusage');
 const { performance, PerformanceObserver } = require('perf_hooks');
 const fs = require('fs');
