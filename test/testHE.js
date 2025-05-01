@@ -6,11 +6,11 @@ const { gen, hashToPrime } = require("../utilities/accumulator.js");
 const { initBitmap, addToBitmap, getBitmapData, getStaticAccData, checkInclusionBitmap, checkInclusionGlobal } = require("../utilities/bitmap.js");
 const { storeEpochPrimes } = require("../utilities/epoch.js");
 const { emptyProducts, emptyStaticAccData } = require("../utilities/product.js");
-const { studentMain, proverCalculate } = require("../HomomorphicEncryption/prover.js");
-const { companyMain, verifierSetUp, verifierDecrypt } = require("../HomomorphicEncryption/verifier.js");
+const { proverCalculate } = require("../HomomorphicEncryption/prover.js");
+const { verifierSetUp, verifierDecrypt } = require("../HomomorphicEncryption/verifier.js");
 const { verify } = require("../revocation/revocation.js");
 const { performance, PerformanceObserver } = require('perf_hooks');
-const { companySetup, generateSignatureKeys, verifierSign } = require("../HomomorphicEncryption/verifier.js");
+const { generateSignatureKeys, verifierSign } = require("../HomomorphicEncryption/verifier.js");
 
 // using the following approach for testing:
 // https://hardhat.org/hardhat-runner/docs/other-guides/truffle-testing
@@ -137,32 +137,31 @@ describe("DID Registry", function() {
 // ===================================================================================================================
 
     describe("1) Credential issuance and homomorphic encryption for correct Issuance Timestamp", function() {
-        let proverData, verifierSetUpData, companySecretKey, proof, vk;
+        let proverData, verifierSetUpData, proof, vk;
         let verifierSignPublicKey, verifierSignPrivateKey, verifierSignature;
 
         // Case: Issuance Date is larger than Threshold Date
         const degreeThresholdTimestamp = "1262304000";  // Unix timestamp: Fri Jan 01 2010 00:00:00
         const degreeIssuanceTimestamp = "1500000000";   // Unix timestamp: Fri Jul 14 2017 02:40:00
 
-        it("Company setup of encryption parameters", async function() {
-            performance.mark("StartCompany1");
-            //({ companySetupData, companySecretKey } = await companySetup(degreeThresholdTimestamp));
+        it("Verifier setup of encryption parameters", async function() {
+            performance.mark("StartVerifier1");
             verifierSetUpData = await verifierSetUp(degreeThresholdTimestamp);
-            performance.mark("EndCompany1");
-            const HEmeasureCompany1 = performance.measure(
-                "HEcompany1",
-                "StartCompany1",
-                "EndCompany1",
+            performance.mark("EndVerifier1");
+            const HEmeasureVerifier1 = performance.measure(
+                "HEVerifier1",
+                "StartVerifier1",
+                "EndVerifier1",
             );
         });
 
-        it("Company sends the encrypted threshold date and encryption parameters to the Student", async function() {
+        it("Verifier sends the encrypted threshold date and encryption parameters to the Prover", async function() {
             // Simulate user sending the proof and VK to the verifier, and avoid credential already exists error
             await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
             assert.isNotNull(verifierSetUpData, "Encryption parameters should not be null when sent");
         });
 
-        it("Student performs homomorphic calculation and sends it to verifier", async function() {
+        it("Prover performs homomorphic calculation and sends it to verifier", async function() {
             performance.mark("StartUser1");
             proverData = await proverCalculate(degreeIssuanceTimestamp, verifierSetUpData.signPublicKey, verifierSetUpData.verifierSignature, verifierSetUpData.thresholdCiphertext, verifierSetUpData.verifierEncryptor, verifierSetUpData.proverEvaluator);
             performance.mark("EndUser1");
@@ -176,14 +175,14 @@ describe("DID Registry", function() {
             assert.isNotNull(vk, "Verification key should not be null");
         });
 
-        it("Student sends the encrypted result to the Company", async function() {
+        it("prover sends the encrypted result to the verifier", async function() {
             // Simulate user sending the proof and VK to the verifier, and avoid credential already exists error
             await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
             assert.isNotNull(proof, "Encryption parameters should not be null when sent");
             assert.isNotNull(vk, "Verification key should not be null when sent");
         });
 
-        it("* Company verifies the result and checks bitmap", async function() {
+        it("* Verifier verifies the result and checks bitmap", async function() {
             performance.mark("StartVerifier1");
             const isVerified = await verifierDecrypt(proverData, verifierSetUpData.verifierDecryptor);
             performance.mark("EndVerifier1");
@@ -200,32 +199,31 @@ describe("DID Registry", function() {
     });
 
     describe("2) Credential issuance and homomorphic encryption for invalid Issuance Timestamp", function() {
-        let studentData, companySetupData, companySecretKey, proof, vk;
+        let proof, vk;
         let verifierSignPublicKey, verifierSignature;
 
         // Case: Issuance Date is smaller than Threshold Date
         const degreeThresholdTimestamp = "1262304000";  // Unix timestamp: Fri Jan 01 2010 00:00:00
         const degreeIssuanceTimestamp = "1000000000";   // Unix timestamp: Sun Sep 09 2001 01:46:40
 
-        it("Company setup of encryption parameters", async function() {
-            performance.mark("StartCompany2");
-            //({ companySetupData, companySecretKey } = await companySetup(degreeThresholdTimestamp));
+        it("Verifier setup of encryption parameters", async function() {
+            performance.mark("StartVerifier2");
             verifierSetUpData = await verifierSetUp(degreeThresholdTimestamp);
-            performance.mark("EndCompany2");
-            const HEmeasureCompany2 = performance.measure(
-                "HEcompany2",
-                "StartCompany2",
-                "EndCompany2",
+            performance.mark("EndVerifier2");
+            const HEmeasureVerifier2 = performance.measure(
+                "HEVerifier2",
+                "StartVerifier2",
+                "EndVerifier2",
             );
         });
 
-        it("Company sends the encrypted threshold date and encryption parameters to the Student", async function() {
+        it("Verifier sends the encrypted threshold date and encryption parameters to the Prover", async function() {
             // Simulate user sending the proof and VK to the verifier, and avoid credential already exists error
             await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
-            assert.isNotNull(companySetupData, "Encryption parameters should not be null when sent");
+            assert.isNotNull(verifierSetUpData, "Encryption parameters should not be null when sent");
         });
 
-        it("Student performs homomorphic calculation and sends it to verifier", async function() {
+        it("Prover performs homomorphic calculation and sends it to verifier", async function() {
             performance.mark("StartUser2");
             proverData = await proverCalculate(degreeIssuanceTimestamp, verifierSetUpData.signPublicKey, verifierSetUpData.verifierSignature, verifierSetUpData.thresholdCiphertext, verifierSetUpData.verifierEncryptor, verifierSetUpData.proverEvaluator);
             performance.mark("EndUser2");
@@ -239,14 +237,14 @@ describe("DID Registry", function() {
             assert.isNotNull(vk, "Verification key should not be null");
         });
 
-        it("Student sends the encrypted result to the Company", async function() {
+        it("Prover sends the encrypted result to the verifier", async function() {
             // Simulate user sending the proof and VK to the verifier, and avoid credential already exists error
             await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
             assert.isNotNull(proof, "Encryption parameters should not be null when sent");
             assert.isNotNull(vk, "Verification key should not be null when sent");
         });
 
-        it("Company verifies the result", async function() {
+        it("Verifier verifies the result", async function() {
             performance.mark("StartVerifier2");
             const isVerified = await verifierDecrypt(proverData, verifierSetUpData.verifierDecryptor);
             performance.mark("EndVerifier2");
@@ -262,64 +260,63 @@ describe("DID Registry", function() {
 
 
     describe("3) Credential issuance and homomorphic encryption for tampered Issuance Timestamp", function() {
-        let studentData, companySetupData, companySecretKey, proof, vk;
+        let proof, vk;
         let verifierSignPublicKey, verifierSignature;
 
         // Case: Issuance Date is smaller than Threshold Date
         const degreeThresholdTimestamp = "1262304000";  // Unix timestamp: Fri Jan 01 2010 00:00:00
         const degreeIssuanceTimestamp = "1500000000";   // Unix timestamp: Sun Sep 09 2001 01:46:40
 
-        it("Company setup of encryption parameters", async function() {
-            performance.mark("StartCompany2");
+        it("Verifier setup of encryption parameters", async function() {
+            performance.mark("StartVerifier3");
             verifierSetUpData = await verifierSetUp(degreeThresholdTimestamp);
-            performance.mark("EndCompany2");
-            const HEmeasureCompany2 = performance.measure(
-                "HEcompany2",
-                "StartCompany2",
-                "EndCompany2",
+            performance.mark("EndVerifier3");
+            const HEmeasureVerifier3 = performance.measure(
+                "HEVerifier3",
+                "StartVerifier3",
+                "EndVerifier3",
             );
         });
 
-        it("Company sends the encrypted threshold date and encryption parameters to the Student", async function() {
+        it("Verifier sends the encrypted threshold date and encryption parameters to the prover", async function() {
             // Simulate user sending the proof and VK to the verifier, and avoid credential already exists error
             await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
-            assert.isNotNull(companySetupData, "Encryption parameters should not be null when sent");
+            assert.isNotNull(verifierSetUpData, "Encryption parameters should not be null when sent");
         });
 
-        it("Student performs homomorphic calculation and sends it to verifier", async function() {
-            performance.mark("StartUser2");
+        it("Prover performs homomorphic calculation and sends it to verifier", async function() {
+            performance.mark("StartUser3");
             proverData = await proverCalculate(degreeIssuanceTimestamp, verifierSetUpData.signPublicKey, verifierSetUpData.verifierSignature, verifierSetUpData.thresholdCiphertext, verifierSetUpData.verifierEncryptor, verifierSetUpData.proverEvaluator);
-            console.log(proverData);
-            performance.mark("EndUser2");
-            const HEmeasureUser2 = performance.measure(
-                "HEuser2",
-                "StartUser2",
-                "EndUser2",
+            performance.mark("EndUser3");
+            const HEmeasureUser3 = performance.measure(
+                "HEuser3",
+                "StartUser3",
+                "EndUser3",
             );
 
             assert.isNotNull(proverData, "Encryption parameters should not be null");
             assert.isNotNull(vk, "Verification key should not be null");
         });
 
-        it("Student modifies the result of the calculation", async function() {
+        it("Prover modifies the result of the calculation", async function() {
             proverData = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";  // Simulate new cipherTextResult
         });
 
-        it("Student sends the tampered result to the Company", async function() {
+        it("Prover sends the tampered result to the verifier", async function() {
             // Simulate user sending the proof and VK to the verifier, and avoid credential already exists error
             await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
             assert.isNotNull(proof, "Encryption parameters should not be null when sent");
             assert.isNotNull(vk, "Verification key should not be null when sent");
         });
 
-        it("Company verifies the result and checks bitmap", async function() {
-            performance.mark("StartVerifier2");
+        it("Verifier verifies the result and checks bitmap", async function() {
+            performance.mark("StartVerifier3");
             const isVerified = await verifierDecrypt(proverData, verifierSetUpData.verifierDecryptor);
-            performance.mark("EndVerifier2");
-            const HEmeasureVerifier2 = performance.measure(
-                "HEverifier2",
-                "StartVerifier2",
-                "EndVerifier2",
+            performance.mark("EndVerifier3");
+            const HEmeasureVerifier3 = performance.measure(
+                "HEverifier3",
+                "StartVerifier3",
+                "EndVerifier3",
             )
         });
     });
