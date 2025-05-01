@@ -11,6 +11,7 @@ artifacts
 
 HomomorphicEncryption/companySecretKey.json
 HomomorphicEncryption/companySetupData.json
+HomomorphicEncryption/verifierSetupData.json
 HomomorphicEncryption/proverData.json
 .gitignore
 ZKP/proof.json
