@@ -6,8 +6,8 @@ const { gen, hashToPrime } = require("../utilities/accumulator.js");
 const { initBitmap, addToBitmap, getBitmapData, getStaticAccData, checkInclusionBitmap, checkInclusionGlobal } = require("../utilities/bitmap.js");
 const { storeEpochPrimes } = require("../utilities/epoch.js");
 const { emptyProducts, emptyStaticAccData } = require("../utilities/product.js");
-const { studentMain } = require("../HomomorphicEncryption/prover.js");
-const { companyMain } = require("../HomomorphicEncryption/verifier.js");
+const { studentMain, proverCalculate } = require("../HomomorphicEncryption/prover.js");
+const { companyMain, verifierSetUp, verifierDecrypt } = require("../HomomorphicEncryption/verifier.js");
 const { verify } = require("../revocation/revocation.js");
 const { performance, PerformanceObserver } = require('perf_hooks');
 const { companySetup, generateSignatureKeys, verifierSign } = require("../HomomorphicEncryption/verifier.js");
@@ -137,7 +137,7 @@ describe("DID Registry", function() {
 // ===================================================================================================================
 
     describe("1) Credential issuance and homomorphic encryption for correct Issuance Timestamp", function() {
-        let studentData, companySetupData, companySecretKey, proof, vk;
+        let proverData, verifierSetUpData, companySecretKey, proof, vk;
         let verifierSignPublicKey, verifierSignPrivateKey, verifierSignature;
 
         // Case: Issuance Date is larger than Threshold Date
@@ -146,13 +146,8 @@ describe("DID Registry", function() {
 
         it("Company setup of encryption parameters", async function() {
             performance.mark("StartCompany1");
-            ({ companySetupData, companySecretKey } = await companySetup(degreeThresholdTimestamp));
-            let ciphertext = companySetupData.cipherTextThreshold;
-            // let signingKeys = await generateSignatureKeys();
-            // verifierSignPrivateKey = signingKeys.privateKey;
-            verifierSignPublicKey = companySetupData.signaturePublicKey;
-            verifierSignature = companySetupData.ciphertextSignature;
-            // verifierSignature = await verifierSign(verifierSignPrivateKey, ciphertext);
+            //({ companySetupData, companySecretKey } = await companySetup(degreeThresholdTimestamp));
+            verifierSetUpData = await verifierSetUp(degreeThresholdTimestamp);
             performance.mark("EndCompany1");
             const HEmeasureCompany1 = performance.measure(
                 "HEcompany1",
@@ -164,12 +159,12 @@ describe("DID Registry", function() {
         it("Company sends the encrypted threshold date and encryption parameters to the Student", async function() {
             // Simulate user sending the proof and VK to the verifier, and avoid credential already exists error
             await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
-            assert.isNotNull(companySetupData, "Encryption parameters should not be null when sent");
+            assert.isNotNull(verifierSetUpData, "Encryption parameters should not be null when sent");
         });
 
         it("Student performs homomorphic calculation and sends it to verifier", async function() {
             performance.mark("StartUser1");
-            studentData = await studentMain(degreeIssuanceTimestamp, companySetupData, verifierSignature, verifierSignPublicKey);
+            proverData = await proverCalculate(degreeIssuanceTimestamp, verifierSetUpData.signPublicKey, verifierSetUpData.verifierSignature, verifierSetUpData.thresholdCiphertext, verifierSetUpData.verifierEncryptor, verifierSetUpData.proverEvaluator);
             performance.mark("EndUser1");
             const HEmeasureUser1 = performance.measure(
                 "HEuser1",
@@ -177,7 +172,7 @@ describe("DID Registry", function() {
                 "EndUser1",
             );
 
-            assert.isNotNull(studentData, "Encryption parameters should not be null");
+            assert.isNotNull(proverData, "Encryption parameters should not be null");
             assert.isNotNull(vk, "Verification key should not be null");
         });
 
@@ -190,7 +185,7 @@ describe("DID Registry", function() {
 
         it("* Company verifies the result and checks bitmap", async function() {
             performance.mark("StartVerifier1");
-            const isVerified = await companyMain(studentData, companySetupData, companySecretKey);
+            const isVerified = await verifierDecrypt(proverData, verifierSetUpData.verifierDecryptor);
             performance.mark("EndVerifier1");
             const HEmeasureVerifier1 = performance.measure(
                 "HEverifier1",
@@ -214,10 +209,8 @@ describe("DID Registry", function() {
 
         it("Company setup of encryption parameters", async function() {
             performance.mark("StartCompany2");
-            ({ companySetupData, companySecretKey } = await companySetup(degreeThresholdTimestamp));
-            let signingKeys = await generateSignatureKeys();
-            verifierSignature = await verifierSign(signingKeys.privateKey, companySetupData.cipherTextThreshold);
-            verifierSignPublicKey = signingKeys.publicKey;
+            //({ companySetupData, companySecretKey } = await companySetup(degreeThresholdTimestamp));
+            verifierSetUpData = await verifierSetUp(degreeThresholdTimestamp);
             performance.mark("EndCompany2");
             const HEmeasureCompany2 = performance.measure(
                 "HEcompany2",
@@ -234,7 +227,7 @@ describe("DID Registry", function() {
 
         it("Student performs homomorphic calculation and sends it to verifier", async function() {
             performance.mark("StartUser2");
-            studentData = await studentMain(degreeIssuanceTimestamp, companySetupData, verifierSignature, verifierSignPublicKey);
+            proverData = await proverCalculate(degreeIssuanceTimestamp, verifierSetUpData.signPublicKey, verifierSetUpData.verifierSignature, verifierSetUpData.thresholdCiphertext, verifierSetUpData.verifierEncryptor, verifierSetUpData.proverEvaluator);
             performance.mark("EndUser2");
             const HEmeasureUser2 = performance.measure(
                 "HEuser2",
@@ -242,7 +235,7 @@ describe("DID Registry", function() {
                 "EndUser2",
             );
 
-            assert.isNotNull(studentData, "Encryption parameters should not be null");
+            assert.isNotNull(proverData, "Encryption parameters should not be null");
             assert.isNotNull(vk, "Verification key should not be null");
         });
 
@@ -255,7 +248,7 @@ describe("DID Registry", function() {
 
         it("Company verifies the result", async function() {
             performance.mark("StartVerifier2");
-            const isVerified = await companyMain(studentData, companySetupData, companySecretKey);
+            const isVerified = await verifierDecrypt(proverData, verifierSetUpData.verifierDecryptor);
             performance.mark("EndVerifier2");
             const HEmeasureVerifier2 = performance.measure(
                 "HEverifier2",
@@ -278,10 +271,7 @@ describe("DID Registry", function() {
 
         it("Company setup of encryption parameters", async function() {
             performance.mark("StartCompany2");
-            ({ companySetupData, companySecretKey } = await companySetup(degreeThresholdTimestamp));
-            let signingKeys = await generateSignatureKeys();
-            verifierSignature = await verifierSign(signingKeys.privateKey, companySetupData.cipherTextThreshold);
-            verifierSignPublicKey = signingKeys.publicKey;
+            verifierSetUpData = await verifierSetUp(degreeThresholdTimestamp);
             performance.mark("EndCompany2");
             const HEmeasureCompany2 = performance.measure(
                 "HEcompany2",
@@ -298,7 +288,8 @@ describe("DID Registry", function() {
 
         it("Student performs homomorphic calculation and sends it to verifier", async function() {
             performance.mark("StartUser2");
-            studentData = await studentMain(degreeIssuanceTimestamp, companySetupData, verifierSignature, verifierSignPublicKey);
+            proverData = await proverCalculate(degreeIssuanceTimestamp, verifierSetUpData.signPublicKey, verifierSetUpData.verifierSignature, verifierSetUpData.thresholdCiphertext, verifierSetUpData.verifierEncryptor, verifierSetUpData.proverEvaluator);
+            console.log(proverData);
             performance.mark("EndUser2");
             const HEmeasureUser2 = performance.measure(
                 "HEuser2",
@@ -306,12 +297,12 @@ describe("DID Registry", function() {
                 "EndUser2",
             );
 
-            assert.isNotNull(studentData, "Encryption parameters should not be null");
+            assert.isNotNull(proverData, "Encryption parameters should not be null");
             assert.isNotNull(vk, "Verification key should not be null");
         });
 
         it("Student modifies the result of the calculation", async function() {
-            studentData.cipherTextResult = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";  // Simulate new cipherTextResult
+            proverData = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";  // Simulate new cipherTextResult
         });
 
         it("Student sends the tampered result to the Company", async function() {
@@ -323,7 +314,7 @@ describe("DID Registry", function() {
 
         it("Company verifies the result and checks bitmap", async function() {
             performance.mark("StartVerifier2");
-            const isVerified = await companyMain(studentData, companySetupData, companySecretKey);
+            const isVerified = await verifierDecrypt(proverData, verifierSetUpData.verifierDecryptor);
             performance.mark("EndVerifier2");
             const HEmeasureVerifier2 = performance.measure(
                 "HEverifier2",

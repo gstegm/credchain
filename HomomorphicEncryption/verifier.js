@@ -106,14 +106,20 @@ async function verifierEncrypt(value, encryptor) {
 }
 
 async function verifierDecrypt(value, decryptor) {
-    const resultStudent = tfhe_rs.decrypt(value, decryptor);
-    console.log("\tDecoded Result:", resultStudent);
-    if (!resultStudent) {
-        console.log("\tVALID Issuance Date");
-        return true;
-    } else {
-        console.log("\tINVALID Issuance Date");
-        return false;
+    try {
+        const resultStudent = tfhe_rs.decrypt(value, decryptor);
+        console.log("\tDecoded Result:", resultStudent);
+        if (!resultStudent) {
+            console.log("\tVALID Issuance Date");
+            return true;
+        } else {
+            console.log("\tINVALID Issuance Date");
+            return false;
+        }
+    } catch (error) {
+        console.log("\tIncompatible encryption parameters or ciphertext format:", error.message);
+        console.log("\tTAMPERED DATA");
+        return false
     }
 }
 
@@ -129,10 +135,10 @@ async function verifierSetUp(timestamp) {
     let signPublicKey = signingKeys.publicKey;
     let signPrivateKey = signingKeys.privateKey;
 
-    thresholdCiphertext = await verifierEncrypt(timestamp, encryptor);
-    signature = await verifierSign(signPrivateKey, thresholdCiphertext);
+    let thresholdCiphertext = await verifierEncrypt(timestamp, encryptor);
+    let signature = await verifierSign(signPrivateKey, thresholdCiphertext);
 
-    return {
+    let verifierSetUpData =  {
         signPublicKey: signPublicKey,
         verifierSignature: signature,
         thresholdCiphertext: thresholdCiphertext,
@@ -140,6 +146,11 @@ async function verifierSetUp(timestamp) {
         verifierDecryptor: decryptor,
         proverEvaluator: evaluator,
     }
+
+    // Save the results to file
+    fs.writeFileSync('./HomomorphicEncryption/verifierSetupData.json', JSON.stringify(verifierSetUpData));
+
+    return verifierSetUpData;
 }
 
 async function verifierProve(proverVesult, decryptor) {
