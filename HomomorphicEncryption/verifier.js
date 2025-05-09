@@ -145,7 +145,6 @@ async function verifierCreateDecoys(evaluator, encryptor, cipher1, cipher2) {
 
 // needed for alternative protocol
 async function verifierVerify(obscuredListPlain, decoyListPlain, position) {
-    const result;
     for (let i = 0; i < 10; i++) {
         if (i < position) {
             console.assert(obscuredListPlain[i] === decoyListPlain[i]);
@@ -161,4 +160,4 @@ async function verifierVerify(obscuredListPlain, decoyListPlain, position) {
     return !obscuredListPlain[position];
 }
 
-module.exports = { verifierSetUp, verifierProve, generateEncryptionKeys, generateSignatureKeys, verifierEncrypt, verifierDecrypt, verifierSign, verifierComputeResult, verifierEncryptPublicKey, verifierCreateDecoys, verifierSignatureVerify};
+module.exports = { verifierSetUp, verifierProve, generateEncryptionKeys, generateSignatureKeys, verifierEncrypt, verifierDecrypt, verifierSign, verifierComputeResult, verifierEncryptPublicKey, verifierCreateDecoys, verifierSignatureVerify, verifierVerify};
