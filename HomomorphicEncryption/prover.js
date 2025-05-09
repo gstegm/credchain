@@ -73,4 +73,4 @@ async function proverSign(key, data) {
 
 
 //module.exports = { proverCalculate, signatureVerify, generateEvaluator, computeResult, proverEncrypt };
-module.exports = {proverCalculate, signatureVerify, computeResult, proverEncrypt };
+module.exports = {proverCalculate, signatureVerify, computeResult, proverEncrypt, proverGenerateEncryptionKeys, proverGenerateSignatureKeys, proverSign };

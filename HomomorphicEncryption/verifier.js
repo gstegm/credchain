@@ -125,4 +125,19 @@ async function verifierEncryptPublicKey(value, encryptor) {
     return cipher;
 }
 
-module.exports = { verifierSetUp, verifierProve, generateEncryptionKeys, generateSignatureKeys, verifierEncrypt, verifierDecrypt, verifierSign};
+async function verifierCreateDecoys(evaluator, encryptor, cipher1, cipher2) {
+    const compResult = verifierComputeResult(cipher1, cipher2, evaluator);
+    const decoyList = [];
+    const position = Math.floor(Math.random() * 10);
+    for (let i = 0; i < 10; i++) {
+        if (i === position) {
+            decoyList.push(compResult);
+        } else {
+            decoyPlain = Math.floor(Math.random() * 2);
+            decoyCipher = verifierEncryptPublicKey(decoyPlain, encryptor);
+            decoyList.push(decoyCipher);
+        }
+    }
+}
+
+module.exports = { verifierSetUp, verifierProve, generateEncryptionKeys, generateSignatureKeys, verifierEncrypt, verifierDecrypt, verifierSign, verifierComputeResult, verifierEncryptPublicKey, verifierCreateDecoys};
