@@ -99,4 +99,30 @@ async function verifierProve(proverVesult, decryptor) {
     return result;
 }
 
+
+// verify signed message sent by company with its public key (needed for alternative protocol)
+async function verifierSignatureVerify(pubKey, signature, data) {
+    const ec = new TextEncoder();
+    const verified = await subtle.verify({ name: 'ECDSA', hash: { name: 'SHA-384' }}, pubKey, signature, ec.encode(data));
+    return verified;
+}
+
+// needed for alternative protocol
+async function verifierComputeResult(evaluator, cipher1, cipher2) {
+    // const seal = await SEAL();
+    const compResult = tfhe_rs.greaterThan(cipher1, cipher2, evaluator);
+
+    //const proverResult = { result: compResult.save() }
+    fs.writeFileSync('./HomomorphicEncryption/proverData.json', JSON.stringify(compResult));
+
+    return compResult;
+}
+
+// needed for alternative protocol
+async function verifierEncryptPublicKey(value, encryptor) {
+    const pValue = parseInt(value);
+    const cipher = await tfhe_rs.encryptPublicKey(pValue, encryptor);
+    return cipher;
+}
+
 module.exports = { verifierSetUp, verifierProve, generateEncryptionKeys, generateSignatureKeys, verifierEncrypt, verifierDecrypt, verifierSign};

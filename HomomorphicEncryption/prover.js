@@ -36,5 +36,41 @@ async function proverCalculate(timestamp, signPublicKey, signature, thresholdCip
     }
 }
 
+// function to generate encryption keys for HE (needed for alternative protocol)
+async function proverGenerateEncryptionKeys() {
+    const keys = tfhe_rs.getKeys();
+    const decryptor = keys[0];
+    const evaluator = keys[1];
+    const encryptor = keys[2];
+
+    const instances = {
+        encryptor: encryptor,
+        decryptor: decryptor,
+        evaluator: evaluator,
+    }
+    return instances;
+}
+
+// needed for alternative protocol
+async function proverGenerateSignatureKeys(namedCurve = 'P-521') {
+    const { publicKey, privateKey } = await subtle.generateKey({
+      name: 'ECDSA',
+      namedCurve,
+    }, true, ['sign', 'verify']);
+    const keys = {
+        publicKey: publicKey,
+        privateKey: privateKey,
+    }
+    return keys;
+  }
+
+// function to sign a ciphertext (needed for alternative protocol)
+async function proverSign(key, data) {
+    const ec = new TextEncoder();
+    const signature = await subtle.sign({ name: 'ECDSA', hash: { name: 'SHA-384' }}, key, ec.encode(data))
+    return signature;
+}
+
+
 //module.exports = { proverCalculate, signatureVerify, generateEvaluator, computeResult, proverEncrypt };
 module.exports = {proverCalculate, signatureVerify, computeResult, proverEncrypt };
