@@ -125,19 +125,40 @@ async function verifierEncryptPublicKey(value, encryptor) {
     return cipher;
 }
 
+
+// needed for alternative protocol
 async function verifierCreateDecoys(evaluator, encryptor, cipher1, cipher2) {
     const compResult = verifierComputeResult(cipher1, cipher2, evaluator);
-    const decoyList = [];
+    const obscuredList = [];
     const position = Math.floor(Math.random() * 10);
     for (let i = 0; i < 10; i++) {
         if (i === position) {
-            decoyList.push(compResult);
+            obscuredList.push(compResult);
         } else {
-            decoyPlain = Math.floor(Math.random() * 2);
-            decoyCipher = verifierEncryptPublicKey(decoyPlain, encryptor);
-            decoyList.push(decoyCipher);
+            const decoyPlain = Math.floor(Math.random() * 2);
+            const decoyCipher = verifierEncryptPublicKey(decoyPlain, encryptor);
+            obscuredList.push(decoyCipher);
         }
     }
+    return {position, obscuredList};
 }
 
-module.exports = { verifierSetUp, verifierProve, generateEncryptionKeys, generateSignatureKeys, verifierEncrypt, verifierDecrypt, verifierSign, verifierComputeResult, verifierEncryptPublicKey, verifierCreateDecoys};
+// needed for alternative protocol
+async function verifierVerify(obscuredListPlain, decoyListPlain, position) {
+    const result;
+    for (let i = 0; i < 10; i++) {
+        if (i < position) {
+            console.assert(obscuredListPlain[i] === decoyListPlain[i]);
+        } else if (i > position) {
+            console.assert(obscuredListPlain[i] === decoyListPlain[i-1])
+        }
+    }
+    if (!obscuredListPlain[position]) {
+        console.log("\tVALID Issuance Date");
+    } else {
+        console.log("\tINVALID Issuance Date");
+    }
+    return !obscuredListPlain[position];
+}
+
+module.exports = { verifierSetUp, verifierProve, generateEncryptionKeys, generateSignatureKeys, verifierEncrypt, verifierDecrypt, verifierSign, verifierComputeResult, verifierEncryptPublicKey, verifierCreateDecoys, verifierSignatureVerify};

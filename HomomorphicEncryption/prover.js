@@ -72,5 +72,15 @@ async function proverSign(key, data) {
 }
 
 
+// needed for alternative protocol
+async function proverDecrypt(obscuredListCipher, decryptor){
+    const obscuredListPlain = {};
+    for (let i = 0; i < 10; i++) {
+        obscuredListPlain.push(tfhe_rs.decrypt(obscuredListCipher[i], decryptor));
+    }
+    return obscuredListPlain;
+}
+
+
 //module.exports = { proverCalculate, signatureVerify, generateEvaluator, computeResult, proverEncrypt };
-module.exports = {proverCalculate, signatureVerify, computeResult, proverEncrypt, proverGenerateEncryptionKeys, proverGenerateSignatureKeys, proverSign };
+module.exports = {proverCalculate, signatureVerify, computeResult, proverEncrypt, proverGenerateEncryptionKeys, proverGenerateSignatureKeys, proverSign, proverDecrypt };
