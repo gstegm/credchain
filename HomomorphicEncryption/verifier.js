@@ -120,9 +120,14 @@ async function verifierComputeResult(evaluator, cipher1, cipher2) {
 
 // needed for alternative protocol
 async function verifierEncryptPublicKey(value, encryptor) {
-    const pValue = parseInt(value);
-    const cipher = await tfhe_rs.encryptPublicKey(pValue, encryptor);
-    return cipher;
+    if (typeof(value) == "boolean") {
+        const cipher = await tfhe_rs.encryptBoolPublicKey(value, encryptor);
+        return cipher;
+    } else {
+        const pValue = parseInt(value);
+        const cipher = await tfhe_rs.encryptPublicKey(pValue, encryptor);
+        return cipher;
+    }
 }
 
 
@@ -136,7 +141,7 @@ async function verifierCreateDecoys(evaluator, encryptor, cipher1, cipher2) {
         if (i === position) {
             obscuredListCipher.push(compResult);
         } else {
-            const decoyPlain = Math.floor(Math.random() * 2);
+            const decoyPlain = Boolean(Math.floor(Math.random() * 2));
             const decoyCipher = await verifierEncryptPublicKey(decoyPlain, encryptor);
             decoyListPlain.push(decoyPlain);
             obscuredListCipher.push(decoyCipher);

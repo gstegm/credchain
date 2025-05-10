@@ -61,6 +61,18 @@ fn encrypt_public_key(plain: i64, compressed_public_key_ser:Vec<u8>) -> Vec<u8> 
 }
 
 #[napi]
+fn encrypt_bool_public_key(plain: bool, compressed_public_key_ser:Vec<u8>) -> Vec<u8> {
+    let compressed_public_key_ser: Vec<u8> = compressed_public_key_ser.into();
+    let compressed_public_key: CompressedPublicKey = safe_deserialize(compressed_public_key_ser.as_slice(), 1 << 35).unwrap();
+    let public_key = compressed_public_key.decompress();
+   
+    let cipher = FheBool::encrypt(plain, &public_key);
+    let mut cipher_ser = vec![];
+    safe_serialize(&cipher, &mut cipher_ser, 1 << 20).unwrap();
+    return cipher_ser.into();
+}
+
+#[napi]
 fn greater_than(cipher_a_ser: Vec<u8>, cipher_b_ser: Vec<u8>, compressed_server_key_ser:Vec<u8>) -> Vec<u8> {
     let compressed_server_key_ser: Vec<u8> = compressed_server_key_ser.into();
     let cipher_a_ser: Vec<u8> = cipher_a_ser.into();
