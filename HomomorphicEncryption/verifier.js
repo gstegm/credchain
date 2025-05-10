@@ -128,23 +128,26 @@ async function verifierEncryptPublicKey(value, encryptor) {
 
 // needed for alternative protocol
 async function verifierCreateDecoys(evaluator, encryptor, cipher1, cipher2) {
-    const compResult = verifierComputeResult(cipher1, cipher2, evaluator);
-    const obscuredList = [];
+    const compResult = await verifierComputeResult(evaluator, cipher1, cipher2);
+    const decoyListPlain = [];
+    const obscuredListCipher = [];
     const position = Math.floor(Math.random() * 10);
     for (let i = 0; i < 10; i++) {
         if (i === position) {
-            obscuredList.push(compResult);
+            obscuredListCipher.push(compResult);
         } else {
             const decoyPlain = Math.floor(Math.random() * 2);
-            const decoyCipher = verifierEncryptPublicKey(decoyPlain, encryptor);
-            obscuredList.push(decoyCipher);
+            const decoyCipher = await verifierEncryptPublicKey(decoyPlain, encryptor);
+            decoyListPlain.push(decoyPlain);
+            obscuredListCipher.push(decoyCipher);
         }
     }
-    return {position, obscuredList};
+    return {obscuredListCipher, decoyListPlain, position};
 }
 
 // needed for alternative protocol
 async function verifierVerify(obscuredListPlain, decoyListPlain, position) {
+    console.log(position);
     for (let i = 0; i < 10; i++) {
         if (i < position) {
             console.assert(obscuredListPlain[i] === decoyListPlain[i]);
@@ -158,6 +161,16 @@ async function verifierVerify(obscuredListPlain, decoyListPlain, position) {
         console.log("\tINVALID Issuance Date");
     }
     return !obscuredListPlain[position];
+}
+
+// needed for alternative protocol
+async function verifierCalculate(timestamp, signPublicKey, signature, thresholdCiphertext, encryptor, evaluator) {
+    let ver = await verifierSignatureVerify(signPublicKey, signature, thresholdCiphertext);
+    if (ver) {
+        let issuanceCiphertext = await verifierEncryptPublicKey(timestamp, encryptor);
+        let result = await verifierComputeResult(evaluator, thresholdCiphertext, issuanceCiphertext);
+        return result;
+    }
 }
 
 module.exports = { verifierSetUp, verifierProve, generateEncryptionKeys, generateSignatureKeys, verifierEncrypt, verifierDecrypt, verifierSign, verifierComputeResult, verifierEncryptPublicKey, verifierCreateDecoys, verifierSignatureVerify, verifierVerify};

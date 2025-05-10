@@ -71,16 +71,45 @@ async function proverSign(key, data) {
     return signature;
 }
 
-
 // needed for alternative protocol
 async function proverDecrypt(obscuredListCipher, decryptor){
-    const obscuredListPlain = {};
+    console.log(obscuredListCipher.length);
+    let obscuredListPlain = [];
     for (let i = 0; i < 10; i++) {
         obscuredListPlain.push(tfhe_rs.decrypt(obscuredListCipher[i], decryptor));
     }
     return obscuredListPlain;
 }
 
+// needed for alternative protocol
+async function proverSetUp(timestamp) {
+    let instances = await proverGenerateEncryptionKeys();
+    let signingKeys = await proverGenerateSignatureKeys();
+
+    let encryptor = instances.encryptor;
+    let decryptor = instances.decryptor;
+    let evaluator  = instances.evaluator;
+
+    let signPublicKey = signingKeys.publicKey;
+    let signPrivateKey = signingKeys.privateKey;
+
+    let issuanceCiphertext = await proverEncrypt(timestamp, encryptor);
+    let signature = await proverSign(signPrivateKey, issuanceCiphertext);
+
+    let proverSetUpData =  {
+        signPublicKey: signPublicKey,
+        proverSignature: signature,
+        thresholdCiphertext: thresholdCiphertext,
+        proverEncryptor: encryptor,
+        proverDecryptor: decryptor,
+        proverEvaluator: evaluator,
+    }
+
+    // Save the results to file
+    //fs.writeFileSync('./HomomorphicEncryption/verifierSetupData.json', JSON.stringify(proverSetUpData));
+
+    return proverSetUpData;
+}
 
 //module.exports = { proverCalculate, signatureVerify, generateEvaluator, computeResult, proverEncrypt };
-module.exports = {proverCalculate, signatureVerify, computeResult, proverEncrypt, proverGenerateEncryptionKeys, proverGenerateSignatureKeys, proverSign, proverDecrypt };
+module.exports = {proverCalculate, signatureVerify, computeResult, proverEncrypt, proverGenerateEncryptionKeys, proverGenerateSignatureKeys, proverSign, proverDecrypt, proverSetUp};
