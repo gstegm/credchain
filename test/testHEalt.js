@@ -167,11 +167,6 @@ describe("DID Registry", function() {
 
         it("(9-11) Verifier computes the difference between threshold and issuance ciphers", async() => {
             ({obscuredListCipher, decoyListPlain, position} = await verifierCreateDecoys(proverEvaluator, proverEncryptor, thresholdCiphertext, issuanceCiphertext));
-            console.log(decoyListPlain);
-            console.log(position);
-            console.log(obscuredListCipher);
-            console.log(obscuredListCipher.length);
-            console.log(decoyListPlain.length);
             assert.exists(obscuredListCipher, 'result was not computed');
             assert.exists(decoyListPlain, 'result was not computed');
             assert.exists(position, 'result was not computed');
@@ -184,7 +179,6 @@ describe("DID Registry", function() {
 
         it("(13) Prover decrypts result", async() => {
             obscuredListPlain = await proverDecrypt(obscuredListCipher, proverDecryptor);
-            console.log(obscuredListPlain);
         });
 
         it("(14) Prover sends decrypted result to verifier", async() => {

@@ -136,12 +136,13 @@ async function verifierCreateDecoys(evaluator, encryptor, cipher1, cipher2) {
     const compResult = await verifierComputeResult(evaluator, cipher1, cipher2);
     const decoyListPlain = [];
     const obscuredListCipher = [];
-    const position = Math.floor(Math.random() * 10);
+    let random = ()=> crypto.getRandomValues(new Uint32Array(1))[0]/2**32;
+    const position = Math.floor(random() * 10);
     for (let i = 0; i < 10; i++) {
         if (i === position) {
             obscuredListCipher.push(compResult);
         } else {
-            const decoyPlain = Boolean(Math.floor(Math.random() * 2));
+            const decoyPlain = Boolean(Math.floor(random() * 2));
             const decoyCipher = await verifierEncryptPublicKey(decoyPlain, encryptor);
             decoyListPlain.push(decoyPlain);
             obscuredListCipher.push(decoyCipher);

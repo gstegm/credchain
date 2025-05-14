@@ -73,7 +73,6 @@ async function proverSign(key, data) {
 
 // needed for alternative protocol
 async function proverDecrypt(obscuredListCipher, decryptor){
-    console.log(obscuredListCipher.length);
     let obscuredListPlain = [];
     for (let i = 0; i < 10; i++) {
         obscuredListPlain.push(tfhe_rs.decrypt(obscuredListCipher[i], decryptor));
