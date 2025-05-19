@@ -36,7 +36,7 @@ async function proverCalculate(timestamp, signPublicKey, signature, thresholdCip
     }
 }
 
-// function to generate encryption keys for HE (needed for alternative protocol)
+// function to generate encryption keys for HE (needed for role-switched protocol)
 async function proverGenerateEncryptionKeys() {
     const keys = tfhe_rs.getKeys();
     const decryptor = keys[0];
@@ -51,7 +51,7 @@ async function proverGenerateEncryptionKeys() {
     return instances;
 }
 
-// needed for alternative protocol
+// needed for role-switched protocol
 async function proverGenerateSignatureKeys(namedCurve = 'P-521') {
     const { publicKey, privateKey } = await subtle.generateKey({
       name: 'ECDSA',
@@ -64,14 +64,14 @@ async function proverGenerateSignatureKeys(namedCurve = 'P-521') {
     return keys;
   }
 
-// function to sign a ciphertext (needed for alternative protocol)
+// function to sign a ciphertext (needed for role-switched protocol)
 async function proverSign(key, data) {
     const ec = new TextEncoder();
     const signature = await subtle.sign({ name: 'ECDSA', hash: { name: 'SHA-384' }}, key, ec.encode(data))
     return signature;
 }
 
-// needed for alternative protocol
+// needed for role-switched protocol
 async function proverDecrypt(obscuredListCipher, decryptor){
     let obscuredListPlain = [];
     for (let i = 0; i < 10; i++) {
@@ -80,7 +80,7 @@ async function proverDecrypt(obscuredListCipher, decryptor){
     return obscuredListPlain;
 }
 
-// needed for alternative protocol
+// needed for role-switched protocol
 async function proverSetUp(timestamp) {
     let instances = await proverGenerateEncryptionKeys();
     let signingKeys = await proverGenerateSignatureKeys();

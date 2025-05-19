@@ -107,7 +107,7 @@ async function verifierSignatureVerify(pubKey, signature, data) {
     return verified;
 }
 
-// needed for alternative protocol
+// needed for role-switched protocol
 async function verifierComputeResult(evaluator, cipher1, cipher2) {
     // const seal = await SEAL();
     const compResult = tfhe_rs.greaterThan(cipher1, cipher2, evaluator);
@@ -118,7 +118,7 @@ async function verifierComputeResult(evaluator, cipher1, cipher2) {
     return compResult;
 }
 
-// needed for alternative protocol
+// needed for role-switched protocol
 async function verifierEncryptPublicKey(value, encryptor) {
     if (typeof(value) == "boolean") {
         const cipher = await tfhe_rs.encryptBoolPublicKey(value, encryptor);
@@ -130,46 +130,86 @@ async function verifierEncryptPublicKey(value, encryptor) {
     }
 }
 
+// needed for role-switched protocol
+async function verifierRandomSample(n, r) {
+    console.assert (r <= n);
 
-// needed for alternative protocol
-async function verifierCreateDecoys(evaluator, encryptor, cipher1, cipher2) {
-    const compResult = await verifierComputeResult(evaluator, cipher1, cipher2);
+    // https://stackoverflow.com/questions/12987719/javascript-how-to-randomly-sample-items-without-replacement
+    let notChosen = [];
+    let chosen = [];
+
+    for (let i=0;i<n;i++) {
+        notChosen.push(i);
+    }
+
+    for (let i=0; i<r; i++) {
+        // https://stackoverflow.com/questions/4083204/secure-random-numbers-in-javascript
+        let random = ()=> crypto.getRandomValues(new Uint32Array(1))[0]/2**32;
+        let randomIndex = Math.floor(random()*notChosen.length);
+
+        chosen.push(notChosen.splice(randomIndex, 1)[0]);
+    }
+    console.log(chosen, notChosen);
+    console.log(chosen.includes(0));
+    return {chosen, notChosen};
+}
+
+// needed for role-switched protocol
+async function verifierCreateDecoys(evaluator, encryptor, thresholdPlaintext, issuanceCiphertext) {
     const decoyListPlain = [];
-    const obscuredListCipher = [];
+    const mixedListCipher = [];
+    const { chosen: decoyIdxs, notChosen: computationIdxs } = await verifierRandomSample(10, 5);
+    console.log("random sampling result", decoyIdxs, computationIdxs);
+
+    // https://stackoverflow.com/questions/4083204/secure-random-numbers-in-javascript
     let random = ()=> crypto.getRandomValues(new Uint32Array(1))[0]/2**32;
-    const position = Math.floor(random() * 10);
+
     for (let i = 0; i < 10; i++) {
-        if (i === position) {
-            obscuredListCipher.push(compResult);
+        if (computationIdxs.includes(i)) {
+            const thresholdCiphertext = await verifierEncryptPublicKey(thresholdPlaintext, encryptor);
+            let compResult = await verifierComputeResult(evaluator, thresholdCiphertext, issuanceCiphertext);
+            const flipBit = Boolean(Math.floor(random() * 2));
+            if (flipBit) {
+                compResult = tfhe_rs.flipBit(compResult, evaluator);
+            }
+            decoyListPlain.push(flipBit);
+            mixedListCipher.push(compResult);
         } else {
             const decoyPlain = Boolean(Math.floor(random() * 2));
             const decoyCipher = await verifierEncryptPublicKey(decoyPlain, encryptor);
             decoyListPlain.push(decoyPlain);
-            obscuredListCipher.push(decoyCipher);
+            mixedListCipher.push(decoyCipher);
         }
     }
-    return {obscuredListCipher, decoyListPlain, position};
+    console.log(mixedListCipher);
+    return {mixedListCipher, decoyListPlain, computationIdxs};
 }
 
-// needed for alternative protocol
-async function verifierVerify(obscuredListPlain, decoyListPlain, position) {
-    console.log(position);
+// needed for role-switched protocol
+async function verifierVerify(mixedListPlain, decoyListPlain, computationIdxs) {
     for (let i = 0; i < 10; i++) {
-        if (i < position) {
-            console.assert(obscuredListPlain[i] === decoyListPlain[i]);
-        } else if (i > position) {
-            console.assert(obscuredListPlain[i] === decoyListPlain[i-1])
+        if (computationIdxs.includes(i) && !decoyListPlain[i]) {
+            if (!mixedListPlain[i]) {
+                console.log("\tVALID Issuance Date");
+            } else {
+                console.log("\tINVALID Issuance Date");
+            }
+        } else if (computationIdxs.includes(i) && !decoyListPlain[i]) {
+            if (mixedListPlain[i]) {
+                console.log("\tVALID Issuance Date");
+            } else {
+                console.log("\tINVALID Issuance Date");
+            }
+
+        } else {
+            console.assert(mixedListPlain[i] === decoyListPlain[i]);
         }
     }
-    if (!obscuredListPlain[position]) {
-        console.log("\tVALID Issuance Date");
-    } else {
-        console.log("\tINVALID Issuance Date");
-    }
-    return !obscuredListPlain[position];
+    console.log(mixedListPlain);
+    return decoyListPlain[computationIdxs[0]] ? mixedListPlain[computationIdxs[0]] : !mixedListPlain[computationIdxs[0]];
 }
 
-// needed for alternative protocol
+// needed for role-switched protocol
 async function verifierCalculate(timestamp, signPublicKey, signature, thresholdCiphertext, encryptor, evaluator) {
     let ver = await verifierSignatureVerify(signPublicKey, signature, thresholdCiphertext);
     if (ver) {

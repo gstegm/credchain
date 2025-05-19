@@ -120,10 +120,10 @@ describe("DID Registry", function() {
         const thresholdTimestamp = "1262304000";  // Unix timestamp: Fri Jan 01 2010 00:00:00
         const issuanceTimestamp = "1500000000";   // Unix timestamp: Fri Jul 14 2017 02:40:00
         let proverSignPublicKey, proverSignPrivateKey, proverSignature;
-        let proverEncryptor, proverDecryptor, obscuredListPlain;
+        let proverEncryptor, proverDecryptor, mixedListPlain;
         let verifierEvaluator, verifierResult;
         let thresholdCiphertext, issuanceCiphertext;
-        let obscuredListCipher, decoyListPlain, position;
+        let mixedListCipher, decoyListPlain, position;
 
         it("(1) Prover parameters setup and (2) generates keys", async() => {
             let proverInstances = await proverGenerateEncryptionKeys();
@@ -161,15 +161,15 @@ describe("DID Registry", function() {
         });
 
         it("(8) Verifier encrypts threshold timestamp", async() => {
-            thresholdCiphertext = await verifierEncryptPublicKey(thresholdTimestamp, proverEncryptor);
-            assert.exists(thresholdCiphertext, 'issuance data was not encrypted');
+        //    thresholdCiphertext = await verifierEncryptPublicKey(thresholdTimestamp, proverEncryptor);
+        //    assert.exists(thresholdCiphertext, 'issuance data was not encrypted');
         });
 
         it("(9-11) Verifier computes the difference between threshold and issuance ciphers", async() => {
-            ({obscuredListCipher, decoyListPlain, position} = await verifierCreateDecoys(proverEvaluator, proverEncryptor, thresholdCiphertext, issuanceCiphertext));
-            assert.exists(obscuredListCipher, 'result was not computed');
+            ({mixedListCipher, decoyListPlain, computationIdxs} = await verifierCreateDecoys(proverEvaluator, proverEncryptor, thresholdTimestamp, issuanceCiphertext));
+            assert.exists(mixedListCipher, 'result was not computed');
             assert.exists(decoyListPlain, 'result was not computed');
-            assert.exists(position, 'result was not computed');
+            assert.exists(computationIdxs, 'result was not computed');
         });
 
         it("(12) Verifier sends the results to the prover", async() => {
@@ -178,7 +178,7 @@ describe("DID Registry", function() {
         });
 
         it("(13) Prover decrypts result", async() => {
-            obscuredListPlain = await proverDecrypt(obscuredListCipher, proverDecryptor);
+            mixedListPlain = await proverDecrypt(mixedListCipher, proverDecryptor);
         });
 
         it("(14) Prover sends decrypted result to verifier", async() => {
@@ -186,7 +186,7 @@ describe("DID Registry", function() {
         });
 
         it("(15) Verifier verifies result", async() => {
-            res = await verifierVerify(obscuredListPlain, decoyListPlain, position);
+            res = await verifierVerify(mixedListPlain, decoyListPlain, computationIdxs);
             assert.isTrue(res, 'the issuance date invalid')
         });
     });

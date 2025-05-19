@@ -98,6 +98,26 @@ fn greater_than(cipher_a_ser: Vec<u8>, cipher_b_ser: Vec<u8>, compressed_server_
 }
 
 #[napi]
+fn flip_bit(cipher_a_ser: Vec<u8>, compressed_server_key_ser:Vec<u8>) -> Vec<u8> {
+    let compressed_server_key_ser: Vec<u8> = compressed_server_key_ser.into();
+    let cipher_a_ser: Vec<u8> = cipher_a_ser.into();
+    //let server_key: CompressedServerKey = safe_deserialize(server_key_ser.as_slice(), 1 << 30).unwrap();
+    let compressed_server_key: CompressedServerKey = safe_deserialize(compressed_server_key_ser.as_slice(), 1 << 30).unwrap();
+    let cipher_a: FheBool = safe_deserialize(cipher_a_ser.as_slice(), 1 << 20).unwrap();
+
+    //let gpu_key = server_key.decompress_to_gpu();
+    let server_key = compressed_server_key.decompress();
+    //set_server_key(gpu_key);
+    set_server_key(server_key);
+
+    let flipresult = !cipher_a;
+    let mut flipresult_ser = vec![];
+    safe_serialize(&flipresult, &mut flipresult_ser, 1 << 20).unwrap();
+
+    return flipresult_ser.into();
+}
+
+#[napi]
 fn decrypt(cipher_ser: Vec<u8>, client_key_ser:Vec<u8>) -> bool {
     let client_key_ser: Vec<u8> = client_key_ser.into();
     let cipher_ser: Vec<u8> = cipher_ser.into();

@@ -12,4 +12,5 @@ export declare function encrypt(plain: number, clientKeySer: Array<number>): Arr
 export declare function encryptPublicKey(plain: number, compressedPublicKeySer: Array<number>): Array<number>
 export declare function encryptBoolPublicKey(plain: boolean, compressedPublicKeySer: Array<number>): Array<number>
 export declare function greaterThan(cipherASer: Array<number>, cipherBSer: Array<number>, compressedServerKeySer: Array<number>): Array<number>
+export declare function flipBit(cipherASer: Array<number>, compressedServerKeySer: Array<number>): Array<number>
 export declare function decrypt(cipherSer: Array<number>, clientKeySer: Array<number>): boolean
