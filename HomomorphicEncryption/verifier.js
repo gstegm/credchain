@@ -149,8 +149,6 @@ async function verifierRandomSample(n, r) {
 
         chosen.push(notChosen.splice(randomIndex, 1)[0]);
     }
-    console.log(chosen, notChosen);
-    console.log(chosen.includes(0));
     return {chosen, notChosen};
 }
 
@@ -159,7 +157,6 @@ async function verifierCreateDecoys(evaluator, encryptor, thresholdPlaintext, is
     const decoyListPlain = [];
     const mixedListCipher = [];
     const { chosen: decoyIdxs, notChosen: computationIdxs } = await verifierRandomSample(10, 5);
-    console.log("random sampling result", decoyIdxs, computationIdxs);
 
     // https://stackoverflow.com/questions/4083204/secure-random-numbers-in-javascript
     let random = ()=> crypto.getRandomValues(new Uint32Array(1))[0]/2**32;
@@ -181,7 +178,6 @@ async function verifierCreateDecoys(evaluator, encryptor, thresholdPlaintext, is
             mixedListCipher.push(decoyCipher);
         }
     }
-    console.log(mixedListCipher);
     return {mixedListCipher, decoyListPlain, computationIdxs};
 }
 
@@ -205,7 +201,6 @@ async function verifierVerify(mixedListPlain, decoyListPlain, computationIdxs) {
             console.assert(mixedListPlain[i] === decoyListPlain[i]);
         }
     }
-    console.log(mixedListPlain);
     return decoyListPlain[computationIdxs[0]] ? mixedListPlain[computationIdxs[0]] : !mixedListPlain[computationIdxs[0]];
 }
 
