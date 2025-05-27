@@ -1,5 +1,6 @@
 const { ZKP_performance } = require("../ZKP/ZKPperformance");
 const { HE_performance } = require("../HomomorphicEncryption/HEperformance");
+const { HE_performance_alt } = require("../HomomorphicEncryption/HEperformance_alt");
 
 async function main() {
     // Get the number of runs from command-line arguments
@@ -12,6 +13,7 @@ async function main() {
     await ZKP_performance(numberOfRuns);
     // console.log("\n==================================================");
     await HE_performance(numberOfRuns);
+    await HE_performance_alt(numberOfRuns);
 }
 
 main();

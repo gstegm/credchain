@@ -205,13 +205,14 @@ async function verifierVerify(mixedListPlain, decoyListPlain, computationIdxs) {
 }
 
 // needed for role-switched protocol
-async function verifierCalculate(timestamp, signPublicKey, signature, thresholdCiphertext, encryptor, evaluator) {
-    let ver = await verifierSignatureVerify(signPublicKey, signature, thresholdCiphertext);
+async function verifierCalculate(issuanceCiphertext, signPublicKey, signature, thresholdTimestamp, encryptor, evaluator) {
+    let ver = await verifierSignatureVerify(signPublicKey, signature, issuanceCiphertext);
     if (ver) {
-        let issuanceCiphertext = await verifierEncryptPublicKey(timestamp, encryptor);
-        let result = await verifierComputeResult(evaluator, thresholdCiphertext, issuanceCiphertext);
-        return result;
+        let thresholdCiphertext = await verifierEncryptPublicKey(thresholdTimestamp, encryptor);
+        let {mixedListCipher, decoyListPlain, computationIdxs} = await verifierCreateDecoys(evaluator, encryptor, thresholdCiphertext, issuanceCiphertext);
+        console.log(mixedListCipher, decoyListPlain, computationIdxs);
+        return {mixedListCipher, decoyListPlain, computationIdxs};
     }
 }
 
-module.exports = { verifierSetUp, verifierProve, generateEncryptionKeys, generateSignatureKeys, verifierEncrypt, verifierDecrypt, verifierSign, verifierComputeResult, verifierEncryptPublicKey, verifierCreateDecoys, verifierSignatureVerify, verifierVerify};
+module.exports = { verifierSetUp, verifierProve, generateEncryptionKeys, generateSignatureKeys, verifierEncrypt, verifierDecrypt, verifierSign, verifierComputeResult, verifierEncryptPublicKey, verifierCreateDecoys, verifierSignatureVerify, verifierVerify, verifierCalculate};

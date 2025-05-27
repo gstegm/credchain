@@ -1,5 +1,5 @@
-const { verifierSetUp, verifierProve } = require("./verifier.js");
-const { proverCalculate } = require("./prover.js");
+const { verifierCalculate, verifierVerify } = require("./verifier.js");
+const { proverSetUp, proverDecrypt } = require("./prover.js");
 // const { companySetup } = require("./company");
 const pidusage = require('pidusage');
 const { performance, PerformanceObserver } = require('perf_hooks');
@@ -41,83 +41,105 @@ async function HEperformance(runs) {
     const obs = new PerformanceObserver(() => {});
     obs.observe({ entryTypes: ['measure'] });
 
-    // let companySetupStats = [];
-    // let studentMainStats = [];
-    // let companyMainStats = [];
-
-    let verifierSetUpStat = [];     // step 1: verifier sets up params, encrypts, signs
-    let proverStat = [];            // step 2: prover verifies sig, computes result
-    let verifierVerifyStat = [];    // step 3: verifier proves the result
+    let proverSetUpStat = [];     // step 1: prover sets up params, encrypts, signs
+    let verifierStat = [];            // step 2: verifier verifies sig, computes result
+    let proverDecryptStat = [];    // step 3: prover the result
+    let verifierVerifyStat = [];    // step 4: verifier proves the result
 
     for (let i = 0; i < runs; i++) {
         console.log(`Run ${i + 1}/${runs}:`);
 
-        const generateVerifierSetUpStat = await measureFunctionExecution(
-            verifierSetUp,
-            'verifierSetUp',
-            degreeThresholdTimestamp
+        const generateProverSetUpStat = await measureFunctionExecution(
+            proverSetUp,
+            'proverSetUp',
+            degreeIssuanceTimestamp
         );
         // remove result from statistics stack
-        verifierSetUpStat.push({cpu: generateVerifierSetUpStat.cpu, memory: generateVerifierSetUpStat.memory, duration: generateVerifierSetUpStat.duration});
+        proverSetUpStat.push({cpu: generateProverSetUpStat.cpu, memory: generateProverSetUpStat.memory, duration: generateProverSetUpStat.duration});
+        console.log(generateProverSetUpStat.result);
 
-        const generateProverStat = await measureFunctionExecution(
-            proverCalculate,
-            'proverCalculate',
-            degreeIssuanceTimestamp,
-            generateVerifierSetUpStat.result.signPublicKey,
-            generateVerifierSetUpStat.result.verifierSignature,
-            generateVerifierSetUpStat.result.thresholdCiphertext,
-            generateVerifierSetUpStat.result.verifierEncryptor,
-            generateVerifierSetUpStat.result.proverEvaluator,
+        const generateVerifierStat = await measureFunctionExecution(
+            verifierCalculate,
+            'verifierCalculate',
+            generateProverSetUpStat.result.issuanceCiphertext,
+            generateProverSetUpStat.result.signPublicKey,
+            generateProverSetUpStat.result.proverSignature,
+            degreeThresholdTimestamp,
+            generateProverSetUpStat.result.proverEncryptor,
+            generateProverSetUpStat.result.verifierEvaluator,
         );
-        proverStat.push({cpu: generateProverStat.cpu, memory: generateProverStat.memory, duration: generateProverStat.duration});
+        console.log(generateVerifierStat.result);
+        verifierStat.push({cpu: generateVerifierStat.cpu, memory: generateVerifierStat.memory, duration: generateVerifierStat.duration});
+
+        const generateProverDecryptStat = await measureFunctionExecution(
+            proverDecrypt,
+            'proverDecrypt',
+            generateVerifierStat.result.mixedListCipher,
+            generateProverSetUpStat.result.proverDecryptor,
+        );
+        proverDecryptStat.push({cpu: generateProverDecryptStat.cpu, memory: generateProverDecryptStat.memory, duration: generateProverDecryptStat.duration});
 
         const generateVerifierVerifyStat = await measureFunctionExecution(
-            verifierProve,
-            'verifierProve',
-            generateProverStat.result,
-            generateVerifierSetUpStat.result.verifierDecryptor,
+            verifierVerify,
+            'verifierVerify',
+            generateProverDecryptStat.result,
+            generateVerifierStat.result.decoyListPlain, generateVerifierStat.result.computationIdxs,
         );
         verifierVerifyStat.push({cpu: generateVerifierVerifyStat.cpu, memory: generateVerifierVerifyStat.memory, duration: generateVerifierVerifyStat.duration});
     };
 
     // measure Step 1
-    const verifierSetUpCPU = verifierSetUpStat.map(stat => stat.cpu);
-    const verifierSetUpMemory = verifierSetUpStat.map(stat => stat.memory);
-    const verifierSetUpTime = verifierSetUpStat.map(stat => stat.duration);
+    const proverSetUpCPU = proverSetUpStat.map(stat => stat.cpu);
+    const proverSetUpMemory = proverSetUpStat.map(stat => stat.memory);
+    const proverSetUpTime = proverSetUpStat.map(stat => stat.duration);
 
     // measure Step 2
-    const proverCPU = proverStat.map(stat => stat.cpu);
-    const proverMemory =  proverStat.map(stat => stat.memory);
-    const proverTime =  proverStat.map(stat => stat.duration);
+    const verifierCPU = verifierStat.map(stat => stat.cpu);
+    const verifierMemory =  verifierStat.map(stat => stat.memory);
+    const verifierTime =  verifierStat.map(stat => stat.duration);
 
     // measure Step 3
+    const proverDecryptCPU = proverDecryptStat.map(stat => stat.cpu);
+    const proverDecryptMemory = proverDecryptStat.map(stat => stat.memory);
+    const proverDecryptTime = proverDecryptStat.map(stat => stat.duration);
+
+    // measure Step 4
     const verifierVerifyCPU = verifierVerifyStat.map(stat => stat.cpu);
     const verifierVerifyMemory = verifierVerifyStat.map(stat => stat.memory);
     const verifierVerifyTime = verifierVerifyStat.map(stat => stat.duration);
 
 
-    const verifierSetUpCPUStats = calculateStats(verifierSetUpCPU);
-    const verifierSetUpMemoryStats = calculateStats(verifierSetUpMemory);
-    const verifierSetUpTimeStats = calculateStats(verifierSetUpTime);
+    const proverSetUpCPUStats = calculateStats(proverSetUpCPU);
+    const proverSetUpMemoryStats = calculateStats(proverSetUpMemory);
+    const proverSetUpTimeStats = calculateStats(proverSetUpTime);
 
-    const proverCPUStats = calculateStats(proverCPU);
-    const proverMemoryStats = calculateStats(proverMemory);
-    const proverTimeStats = calculateStats(proverTime);
+    const verifierCPUStats = calculateStats(verifierCPU);
+    const verifierMemoryStats = calculateStats(verifierMemory);
+    const verifierTimeStats = calculateStats(verifierTime);
+
+    const proverDecryptCPUStats = calculateStats(proverDecryptCPU);
+    const proverDecryptMemoryStats = calculateStats(proverDecryptMemory);
+    const proverDecryptTimeStats = calculateStats(proverDecryptTime);
+
 
     const verifierVerifyCPUStats = calculateStats(verifierVerifyCPU);
     const verifierVerifyMemoryStats = calculateStats(verifierVerifyMemory);
     const verifierVerifyTimeStats = calculateStats(verifierVerifyTime);
 
-    console.log("\nVerifier Setup Stats:");
-    console.log(`CPU:\n\tAvg: ${verifierSetUpCPUStats.avg}%, Max: ${verifierSetUpCPUStats.max}%, Min: ${verifierSetUpCPUStats.min}%, ZEROs: ${verifierSetUpCPUStats.zeroCount}`);
-    console.log(`Memory:\n\tAvg: ${verifierSetUpMemoryStats.avg}MB, Max: ${verifierSetUpMemoryStats.max}MB, Min: ${verifierSetUpMemoryStats.min}MB`);
-    console.log(`Duration:\n\tAvg: ${verifierSetUpTimeStats.avg}ms, Max: ${verifierSetUpTimeStats.max}ms, Min: ${verifierSetUpTimeStats.min}ms`);
+    console.log("\nProver Setup Stats:");
+    console.log(`CPU:\n\tAvg: ${proverSetUpCPUStats.avg}%, Max: ${proverSetUpCPUStats.max}%, Min: ${proverSetUpCPUStats.min}%, ZEROs: ${proverSetUpCPUStats.zeroCount}`);
+    console.log(`Memory:\n\tAvg: ${proverSetUpMemoryStats.avg}MB, Max: ${proverSetUpMemoryStats.max}MB, Min: ${proverSetUpMemoryStats.min}MB`);
+    console.log(`Duration:\n\tAvg: ${proverSetUpTimeStats.avg}ms, Max: ${proverSetUpTimeStats.max}ms, Min: ${proverSetUpTimeStats.min}ms`);
 
-    console.log("\nProver Computation Stats:");
-    console.log(`CPU:\n\tAvg: ${proverCPUStats.avg}%, Max: ${proverCPUStats.max}%, Min: ${proverCPUStats.min}%, ZEROs: ${proverCPUStats.zeroCount}`);
-    console.log(`Memory:\n\tAvg: ${proverMemoryStats.avg}MB, Max: ${proverMemoryStats.max}MB, Min: ${proverMemoryStats.min}MB`);
-    console.log(`Duration:\n\tAvg: ${proverTimeStats.avg}ms, Max: ${proverTimeStats.max}ms, Min: ${proverTimeStats.min}ms`);
+    console.log("\nVerifier Computation Stats:");
+    console.log(`CPU:\n\tAvg: ${verifierCPUStats.avg}%, Max: ${verifierCPUStats.max}%, Min: ${verifierCPUStats.min}%, ZEROs: ${verifierCPUStats.zeroCount}`);
+    console.log(`Memory:\n\tAvg: ${verifierMemoryStats.avg}MB, Max: ${verifierMemoryStats.max}MB, Min: ${verifierMemoryStats.min}MB`);
+    console.log(`Duration:\n\tAvg: ${verifierTimeStats.avg}ms, Max: ${verifierTimeStats.max}ms, Min: ${verifierTimeStats.min}ms`);
+
+    console.log("\nProver Decryption Stats:");
+    console.log(`CPU:\n\tAvg: ${proverDecryptCPUStats.avg}%, Max: ${proverDecryptCPUStats.max}%, Min: ${proverDecryptCPUStats.min}%, ZEROs: ${proverDecryptCPUStats.zeroCount}`);
+    console.log(`Memory:\n\tAvg: ${proverDecryptMemoryStats.avg}MB, Max: ${proverDecryptMemoryStats.max}MB, Min: ${proverDecryptMemoryStats.min}MB`);
+    console.log(`Duration:\n\tAvg: ${proverDecryptTimeStats.avg}ms, Max: ${proverDecryptTimeStats.max}ms, Min: ${proverDecryptTimeStats.min}ms`);
 
     console.log("\nVerifier Verify Stats:");
     console.log(`CPU:\n\tAvg: ${verifierVerifyCPUStats.avg}%, Max: ${verifierVerifyCPUStats.max}%, Min: ${verifierVerifyCPUStats.min}%, ZEROs: ${verifierVerifyCPUStats.zeroCount}`);
@@ -129,24 +151,28 @@ async function HEperformance(runs) {
     for (let i = 0; i < runs; i++) {
         csvData.push({
             run: i + 1,
-            verifierSetUpCPU: verifierSetUpCPU[i],
-            verifierSetUpMemory: verifierSetUpMemory[i],
-            verifierSetUpTime: verifierSetUpTime[i],
-            proverCPU: proverCPU[i],
-            proverMemory: proverMemory[i],
-            proverTime: proverTime[i],
+            proverSetUpCPU: proverSetUpCPU[i],
+            proverSetUpMemory: proverSetUpMemory[i],
+            proverSetUpTime: proverSetUpTime[i],
+            verifierCPU: verifierCPU[i],
+            verifierMemory: verifierMemory[i],
+            verifierTime: verifierTime[i],
+            proverDecryptCPU: proverDecryptCPU[i],
+            proverDecryptMemory: proverDecryptMemory[i],
+            proverDecryptTime: proverDecryptTime[i],
             verifierVerifyCPU: verifierVerifyCPU[i],
             verifierVerifyMemory: verifierVerifyMemory[i],
             verifierVerifyTime: verifierVerifyTime[i],
-            // verifierCPUAverage: (verifierSetUpCPU[i] + verifierVerifyCPU[i]) / 2,
+            // verifierCPUAverage: (proverSetUpCPU[i] + verifierVerifyCPU[i]) / 2,
             // proverCPUAverage:
         });
     };
 
     const fields = [
         'run',
-        'verifierSetUpCPU', 'verifierSetUpMemory', 'verifierSetUpTime',
-        'proverCPU', 'proverMemory', 'proverTime',
+        'proverSetUpCPU', 'proverSetUpMemory', 'proverSetUpTime',
+        'verifierCPU', 'verifierMemory', 'verifierTime',
+        'proverDecryptCPU', 'proverDecryptMemory', 'proverDecryptTime',
         'verifierVerifyCPU', 'verifierVerifyMemory', 'verifierVerifyTime'
     ];
     const json2csvParser = new Parser({ fields });
@@ -157,4 +183,4 @@ async function HEperformance(runs) {
 }
 
 // HEperformance().catch(console.error);
-module.exports = { HE_performance: HEperformance };
+module.exports = { HE_performance_alt: HEperformance };

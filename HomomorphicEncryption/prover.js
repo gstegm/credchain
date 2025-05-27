@@ -98,10 +98,10 @@ async function proverSetUp(timestamp) {
     let proverSetUpData =  {
         signPublicKey: signPublicKey,
         proverSignature: signature,
-        thresholdCiphertext: thresholdCiphertext,
+        issuanceCiphertext: issuanceCiphertext,
         proverEncryptor: encryptor,
         proverDecryptor: decryptor,
-        proverEvaluator: evaluator,
+        verifierEvaluator: evaluator,
     }
 
     // Save the results to file
