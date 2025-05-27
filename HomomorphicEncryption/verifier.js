@@ -1,4 +1,3 @@
-const SEAL = require('node-seal');
 const tfhe_rs = require('../tfhe_comparison.node')
 const fs = require('fs');
 const { subtle } = globalThis.crypto;
@@ -6,14 +5,11 @@ const { subtle } = globalThis.crypto;
 // function to generate encryption keys for HE
 async function generateEncryptionKeys() {
     const keys = tfhe_rs.getKeys();
-    const decryptor = keys[0];
-    const evaluator = keys[1];
-    const encryptor = keys[2];
 
     const instances = {
-        encryptor: encryptor,
-        decryptor: decryptor,
-        evaluator: evaluator,
+        decryptor: keys[0],
+        evaluator: keys[1],
+        encryptor: keys[2],
     }
     return instances;
 }
@@ -39,7 +35,6 @@ async function verifierSign(key, data) {
 }
 
 async function verifierEncrypt(value, encryptor) {
-    // const seal = await SEAL();
     const pValue = parseInt(value);
     const cipher = tfhe_rs.encryptPublicKey(pValue, encryptor);
     //console.log('size cipher', Buffer.byteLength(JSON.stringify(cipher.save())))
@@ -94,8 +89,8 @@ async function verifierSetUp(timestamp) {
     return verifierSetUpData;
 }
 
-async function verifierProve(proverVesult, decryptor) {
-    let result = await verifierDecrypt(proverVesult, decryptor);
+async function verifierProve(proverResult, decryptor) {
+    let result = await verifierDecrypt(proverResult, decryptor);
     return result;
 }
 
@@ -109,12 +104,8 @@ async function verifierSignatureVerify(pubKey, signature, data) {
 
 // needed for role-switched protocol
 async function verifierComputeResult(evaluator, cipher1, cipher2) {
-    // const seal = await SEAL();
     const compResult = tfhe_rs.greaterThan(cipher1, cipher2, evaluator);
-
-    //const proverResult = { result: compResult.save() }
     fs.writeFileSync('./HomomorphicEncryption/proverData.json', JSON.stringify(compResult));
-
     return compResult;
 }
 
@@ -210,7 +201,6 @@ async function verifierCalculate(issuanceCiphertext, signPublicKey, signature, t
     if (ver) {
         let thresholdCiphertext = await verifierEncryptPublicKey(thresholdTimestamp, encryptor);
         let {mixedListCipher, decoyListPlain, computationIdxs} = await verifierCreateDecoys(evaluator, encryptor, thresholdCiphertext, issuanceCiphertext);
-        console.log(mixedListCipher, decoyListPlain, computationIdxs);
         return {mixedListCipher, decoyListPlain, computationIdxs};
     }
 }
