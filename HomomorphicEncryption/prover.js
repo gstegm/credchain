@@ -1,4 +1,3 @@
-const SEAL = require('node-seal');
 const tfhe_rs = require('../tfhe_comparison.node')
 const fs = require('fs');
 const crypto = require("crypto");
@@ -12,12 +11,8 @@ async function signatureVerify(pubKey, signature, data) {
 }
 
 async function computeResult(evaluator, cipher1, cipher2) {
-    // const seal = await SEAL();
     const compResult = tfhe_rs.greaterThan(cipher1, cipher2, evaluator);
-
-    //const proverResult = { result: compResult.save() }
     fs.writeFileSync('./HomomorphicEncryption/proverData.json', JSON.stringify(compResult));
-
     return compResult;
 }
 
@@ -39,14 +34,11 @@ async function proverCalculate(timestamp, signPublicKey, signature, thresholdCip
 // function to generate encryption keys for HE (needed for role-switched protocol)
 async function proverGenerateEncryptionKeys() {
     const keys = tfhe_rs.getKeys();
-    const decryptor = keys[0];
-    const evaluator = keys[1];
-    const encryptor = keys[2];
 
     const instances = {
-        encryptor: encryptor,
-        decryptor: decryptor,
-        evaluator: evaluator,
+        decryptor: keys[0],
+        evaluator: keys[1],
+        encryptor: keys[2],
     }
     return instances;
 }
@@ -72,12 +64,12 @@ async function proverSign(key, data) {
 }
 
 // needed for role-switched protocol
-async function proverDecrypt(obscuredListCipher, decryptor){
-    let obscuredListPlain = [];
+async function proverDecrypt(mixedListCipher, decryptor){
+    let mixedListPlain = [];
     for (let i = 0; i < 10; i++) {
-        obscuredListPlain.push(tfhe_rs.decrypt(obscuredListCipher[i], decryptor));
+        mixedListPlain.push(tfhe_rs.decrypt(mixedListCipher[i], decryptor));
     }
-    return obscuredListPlain;
+    return mixedListPlain;
 }
 
 // needed for role-switched protocol
