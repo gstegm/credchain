@@ -137,8 +137,7 @@ describe("DID Registry", function() {
 // ===================================================================================================================
 
     describe("1) Credential issuance and homomorphic encryption for correct Issuance Timestamp", function() {
-        let proverData, verifierSetUpData, proof, vk;
-        let verifierSignPublicKey, verifierSignPrivateKey, verifierSignature;
+        let proverData, verifierSetUpData;
 
         // Case: Issuance Date is larger than Threshold Date
         const degreeThresholdTimestamp = "1262304000";  // Unix timestamp: Fri Jan 01 2010 00:00:00
@@ -156,7 +155,6 @@ describe("DID Registry", function() {
         });
 
         it("Verifier sends the encrypted threshold date and encryption parameters to the Prover", async function() {
-            // Simulate user sending the proof and VK to the verifier, and avoid credential already exists error
             await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
             assert.isNotNull(verifierSetUpData, "Encryption parameters should not be null when sent");
         });
@@ -172,14 +170,10 @@ describe("DID Registry", function() {
             );
 
             assert.isNotNull(proverData, "Encryption parameters should not be null");
-            assert.isNotNull(vk, "Verification key should not be null");
         });
 
-        it("prover sends the encrypted result to the verifier", async function() {
-            // Simulate user sending the proof and VK to the verifier, and avoid credential already exists error
+        it("Prover sends the encrypted result to the verifier", async function() {
             await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
-            assert.isNotNull(proof, "Encryption parameters should not be null when sent");
-            assert.isNotNull(vk, "Verification key should not be null when sent");
         });
 
         it("* Verifier verifies the result and checks bitmap", async function() {
@@ -199,8 +193,6 @@ describe("DID Registry", function() {
     });
 
     describe("2) Credential issuance and homomorphic encryption for invalid Issuance Timestamp", function() {
-        let proof, vk;
-        let verifierSignPublicKey, verifierSignature;
 
         // Case: Issuance Date is smaller than Threshold Date
         const degreeThresholdTimestamp = "1262304000";  // Unix timestamp: Fri Jan 01 2010 00:00:00
@@ -218,7 +210,6 @@ describe("DID Registry", function() {
         });
 
         it("Verifier sends the encrypted threshold date and encryption parameters to the Prover", async function() {
-            // Simulate user sending the proof and VK to the verifier, and avoid credential already exists error
             await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
             assert.isNotNull(verifierSetUpData, "Encryption parameters should not be null when sent");
         });
@@ -234,14 +225,10 @@ describe("DID Registry", function() {
             );
 
             assert.isNotNull(proverData, "Encryption parameters should not be null");
-            assert.isNotNull(vk, "Verification key should not be null");
         });
 
         it("Prover sends the encrypted result to the verifier", async function() {
-            // Simulate user sending the proof and VK to the verifier, and avoid credential already exists error
             await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
-            assert.isNotNull(proof, "Encryption parameters should not be null when sent");
-            assert.isNotNull(vk, "Verification key should not be null when sent");
         });
 
         it("Verifier verifies the result", async function() {
@@ -260,8 +247,6 @@ describe("DID Registry", function() {
 
 
     describe("3) Credential issuance and homomorphic encryption for tampered Issuance Timestamp", function() {
-        let proof, vk;
-        let verifierSignPublicKey, verifierSignature;
 
         // Case: Issuance Date is smaller than Threshold Date
         const degreeThresholdTimestamp = "1262304000";  // Unix timestamp: Fri Jan 01 2010 00:00:00
@@ -279,7 +264,6 @@ describe("DID Registry", function() {
         });
 
         it("Verifier sends the encrypted threshold date and encryption parameters to the prover", async function() {
-            // Simulate user sending the proof and VK to the verifier, and avoid credential already exists error
             await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
             assert.isNotNull(verifierSetUpData, "Encryption parameters should not be null when sent");
         });
@@ -295,7 +279,6 @@ describe("DID Registry", function() {
             );
 
             assert.isNotNull(proverData, "Encryption parameters should not be null");
-            assert.isNotNull(vk, "Verification key should not be null");
         });
 
         it("Prover modifies the result of the calculation", async function() {
@@ -303,10 +286,7 @@ describe("DID Registry", function() {
         });
 
         it("Prover sends the tampered result to the verifier", async function() {
-            // Simulate user sending the proof and VK to the verifier, and avoid credential already exists error
             await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
-            assert.isNotNull(proof, "Encryption parameters should not be null when sent");
-            assert.isNotNull(vk, "Verification key should not be null when sent");
         });
 
         it("Verifier verifies the result and checks bitmap", async function() {
