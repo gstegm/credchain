@@ -199,8 +199,8 @@ async function verifierVerify(mixedListPlain, decoyListPlain, computationIdxs) {
 async function verifierCalculate(issuanceCiphertext, signPublicKey, signature, thresholdTimestamp, encryptor, evaluator) {
     let ver = await verifierSignatureVerify(signPublicKey, signature, issuanceCiphertext);
     if (ver) {
-        let thresholdCiphertext = await verifierEncryptPublicKey(thresholdTimestamp, encryptor);
-        let {mixedListCipher, decoyListPlain, computationIdxs} = await verifierCreateDecoys(evaluator, encryptor, thresholdCiphertext, issuanceCiphertext);
+        //let thresholdCiphertext = await verifierEncryptPublicKey(thresholdTimestamp, encryptor);
+        let {mixedListCipher, decoyListPlain, computationIdxs} = await verifierCreateDecoys(evaluator, encryptor, thresholdTimestamp, issuanceCiphertext);
         return {mixedListCipher, decoyListPlain, computationIdxs};
     }
 }

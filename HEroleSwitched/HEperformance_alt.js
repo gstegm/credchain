@@ -43,7 +43,7 @@ async function HEperformance(runs) {
 
     let proverSetUpStat = [];     // step 1: prover sets up params, encrypts, signs
     let verifierStat = [];            // step 2: verifier verifies sig, computes result
-    let proverDecryptStat = [];    // step 3: prover the result
+    let proverDecryptStat = [];    // step 3: prover decrypts the result
     let verifierVerifyStat = [];    // step 4: verifier proves the result
 
     for (let i = 0; i < runs; i++) {
