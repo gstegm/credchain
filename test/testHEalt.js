@@ -121,9 +121,8 @@ describe("DID Registry", function() {
         const issuanceTimestamp = "1500000000";   // Unix timestamp: Fri Jul 14 2017 02:40:00
         let proverSignPublicKey, proverSignPrivateKey, proverSignature;
         let proverEncryptor, proverDecryptor, mixedListPlain;
-        let verifierEvaluator, verifierResult;
-        let thresholdCiphertext, issuanceCiphertext;
-        let mixedListCipher, decoyListPlain, position;
+        let issuanceCiphertext;
+        let mixedListCipher, decoyListPlain;
 
         it("(1) Prover parameters setup and (2) generates keys", async() => {
             let proverInstances = await proverGenerateEncryptionKeys();
@@ -160,12 +159,7 @@ describe("DID Registry", function() {
             });
         });
 
-        it("(8) Verifier encrypts threshold timestamp", async() => {
-        //    thresholdCiphertext = await verifierEncryptPublicKey(thresholdTimestamp, proverEncryptor);
-        //    assert.exists(thresholdCiphertext, 'issuance data was not encrypted');
-        });
-
-        it("(9-11) Verifier computes the difference between threshold and issuance ciphers", async() => {
+        it("(8-11) Verifier computes the difference between threshold and issuance ciphers", async() => {
             ({mixedListCipher, decoyListPlain, computationIdxs} = await verifierCreateDecoys(proverEvaluator, proverEncryptor, thresholdTimestamp, issuanceCiphertext));
             assert.exists(mixedListCipher, 'result was not computed');
             assert.exists(decoyListPlain, 'result was not computed');
@@ -196,32 +190,31 @@ describe("DID Registry", function() {
         it("A complete sequence of HE; issuance date valid", async() => {
             const thresholdTimestamp = "1262304000";  // Unix timestamp: Fri Jan 01 2010 00:00:00
             const issuanceTimestamp = "1500000000";   // Unix timestamp: Fri Jul 14 2017 02:40:00
-            let verifierSignPublicKey, verifierSignPrivateKey, verifierSignature;
-            let verifierEncryptor, verifierDecryptor;
-            let proverEvaluator, proverResult;
-            let thresholdCiphertext, issuanceCiphertext;
+            let proverSignPublicKey, proverSignPrivateKey, proverSignature;
+            let proverEncryptor, proverDecryptor, mixedListPlain;
+            let issuanceCiphertext;
+            let mixedListCipher, decoyListPlain;
 
             performance.mark("start");
 
-            let verifierInstances = await generateEncryptionKeys();
-            let signingKeys = await generateSignatureKeys();
+            let proverInstances = await proverGenerateEncryptionKeys();
+            let signingKeys = await proverGenerateSignatureKeys();
 
-            verifierEncryptor = verifierInstances.encryptor;
-            verifierDecryptor = verifierInstances.decryptor;
-            proverEvaluator   = verifierInstances.evaluator;
+            proverEncryptor = proverInstances.encryptor;
+            proverDecryptor = proverInstances.decryptor;
+            proverEvaluator = proverInstances.evaluator;
+            proverSignPublicKey = signingKeys.publicKey;
+            proverSignPrivateKey = signingKeys.privateKey;
 
-            verifierSignPublicKey = signingKeys.publicKey;
-            verifierSignPrivateKey = signingKeys.privateKey;
+            issuanceCiphertext = await proverEncrypt(issuanceTimestamp, proverEncryptor);
+            proverSignature = await proverSign(proverSignPrivateKey, issuanceCiphertext);
 
-            thresholdCiphertext = await verifierEncrypt(thresholdTimestamp, verifierEncryptor);
-            verifierSignature = await verifierSign(verifierSignPrivateKey, thresholdCiphertext);
-
-            let ver = await signatureVerify(verifierSignPublicKey, verifierSignature, thresholdCiphertext);
+            let ver = await verifierSignatureVerify(proverSignPublicKey, proverSignature, issuanceCiphertext);
 
             if (ver) {
-                issuanceCiphertext = await proverEncrypt(issuanceTimestamp, verifierEncryptor);
-                proverResult = await computeResult(proverEvaluator, thresholdCiphertext, issuanceCiphertext);
-                await verifierDecrypt(proverResult, verifierDecryptor).then((res) => {
+                ({mixedListCipher, decoyListPlain, computationIdxs} = await verifierCreateDecoys(proverEvaluator, proverEncryptor, thresholdTimestamp, issuanceCiphertext));
+                mixedListPlain = await proverDecrypt(mixedListCipher, proverDecryptor);
+                await verifierVerify(mixedListPlain, decoyListPlain, computationIdxs).then((res) => {
                     assert.isTrue(res, 'the issuance date invalid');
                 })
             }
