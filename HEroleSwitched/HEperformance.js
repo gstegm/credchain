@@ -183,4 +183,4 @@ async function HEperformance(runs) {
 }
 
 // HEperformance().catch(console.error);
-module.exports = { HE_performance_alt: HEperformance };
+module.exports = { HE_performance_role_switched: HEperformance };

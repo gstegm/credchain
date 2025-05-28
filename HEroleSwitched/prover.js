@@ -3,7 +3,7 @@ const fs = require('fs');
 const crypto = require("crypto");
 const { subtle } = globalThis.crypto;
 
-// function to generate encryption keys for HE (needed for role-switched protocol)
+// function to generate encryption keys for HE
 async function proverGenerateEncryptionKeys() {
     const keys = tfhe_rs.getKeys();
 
@@ -15,7 +15,6 @@ async function proverGenerateEncryptionKeys() {
     return instances;
 }
 
-// needed for role-switched protocol
 async function proverGenerateSignatureKeys(namedCurve = 'P-521') {
     const { publicKey, privateKey } = await subtle.generateKey({
       name: 'ECDSA',
@@ -28,14 +27,19 @@ async function proverGenerateSignatureKeys(namedCurve = 'P-521') {
     return keys;
   }
 
-// function to sign a ciphertext (needed for role-switched protocol)
+
+async function proverEncrypt(value, encryptor) {
+    const pValue = parseInt(value);
+    const cipher = await tfhe_rs.encryptPublicKey(pValue, encryptor);
+    return cipher;
+}
+
 async function proverSign(key, data) {
     const ec = new TextEncoder();
     const signature = await subtle.sign({ name: 'ECDSA', hash: { name: 'SHA-384' }}, key, ec.encode(data))
     return signature;
 }
 
-// needed for role-switched protocol
 async function proverDecrypt(mixedListCipher, decryptor){
     let mixedListPlain = [];
     for (let i = 0; i < 10; i++) {
@@ -44,7 +48,6 @@ async function proverDecrypt(mixedListCipher, decryptor){
     return mixedListPlain;
 }
 
-// needed for role-switched protocol
 async function proverSetUp(timestamp) {
     let instances = await proverGenerateEncryptionKeys();
     let signingKeys = await proverGenerateSignatureKeys();
@@ -74,4 +77,4 @@ async function proverSetUp(timestamp) {
     return proverSetUpData;
 }
 
-module.exports = {proverGenerateEncryptionKeys, proverGenerateSignatureKeys, proverSign, proverDecrypt, proverSetUp};
+module.exports = {proverGenerateEncryptionKeys, proverGenerateSignatureKeys, proverSign, proverEncrypt, proverDecrypt, proverSetUp};
