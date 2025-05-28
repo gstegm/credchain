@@ -41,10 +41,6 @@ async function HEperformance(runs) {
     const obs = new PerformanceObserver(() => {});
     obs.observe({ entryTypes: ['measure'] });
 
-    // let companySetupStats = [];
-    // let studentMainStats = [];
-    // let companyMainStats = [];
-
     let verifierSetUpStat = [];     // step 1: verifier sets up params, encrypts, signs
     let proverStat = [];            // step 2: prover verifies sig, computes result
     let verifierVerifyStat = [];    // step 3: verifier proves the result
