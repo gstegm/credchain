@@ -74,7 +74,7 @@ async function HEperformance(runs) {
         const generateProverDecryptStat = await measureFunctionExecution(
             proverDecrypt,
             'proverDecrypt',
-            generateVerifierStat.result.mixedListCipher,
+            generateVerifierStat.result.cipher,
             generateProverSetUpStat.result.proverDecryptor,
         );
         proverDecryptStat.push({cpu: generateProverDecryptStat.cpu, memory: generateProverDecryptStat.memory, duration: generateProverDecryptStat.duration});
@@ -83,7 +83,7 @@ async function HEperformance(runs) {
             verifierVerify,
             'verifierVerify',
             generateProverDecryptStat.result,
-            generateVerifierStat.result.decoyListPlain, generateVerifierStat.result.computationIdxs,
+            generateVerifierStat.result.decoyValueOrFlipped, generateVerifierStat.result.computationIdxs,
         );
         verifierVerifyStat.push({cpu: generateVerifierVerifyStat.cpu, memory: generateVerifierVerifyStat.memory, duration: generateVerifierVerifyStat.duration});
     };

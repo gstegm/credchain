@@ -120,9 +120,9 @@ describe("DID Registry", function() {
         const thresholdTimestamp = "1262304000";  // Unix timestamp: Fri Jan 01 2010 00:00:00
         const issuanceTimestamp = "1500000000";   // Unix timestamp: Fri Jul 14 2017 02:40:00
         let proverSignPublicKey, proverSignPrivateKey, proverSignature;
-        let proverEncryptor, proverDecryptor, mixedListPlain;
+        let proverEncryptor, proverDecryptor, plain;
         let issuanceCiphertext;
-        let mixedListCipher, decoyListPlain;
+        let cipher, decoyValueOrFlipped;
 
         it("(1) Prover parameters setup and (2) generates keys", async() => {
             let proverInstances = await proverGenerateEncryptionKeys();
@@ -160,9 +160,9 @@ describe("DID Registry", function() {
         });
 
         it("(8-11) Verifier computes the difference between threshold and issuance ciphers", async() => {
-            ({mixedListCipher, decoyListPlain, computationIdxs} = await verifierCreateDecoys(proverEvaluator, proverEncryptor, thresholdTimestamp, issuanceCiphertext));
-            assert.exists(mixedListCipher, 'result was not computed');
-            assert.exists(decoyListPlain, 'result was not computed');
+            ({cipher, decoyValueOrFlipped, computationIdxs} = await verifierCreateDecoys(proverEvaluator, proverEncryptor, thresholdTimestamp, issuanceCiphertext));
+            assert.exists(cipher, 'result was not computed');
+            assert.exists(decoyValueOrFlipped, 'result was not computed');
             assert.exists(computationIdxs, 'result was not computed');
         });
 
@@ -172,7 +172,7 @@ describe("DID Registry", function() {
         });
 
         it("(13) Prover decrypts result", async() => {
-            mixedListPlain = await proverDecrypt(mixedListCipher, proverDecryptor);
+            plain = await proverDecrypt(cipher, proverDecryptor);
         });
 
         it("(14) Prover sends decrypted result to verifier", async() => {
@@ -180,7 +180,7 @@ describe("DID Registry", function() {
         });
 
         it("(15) Verifier verifies result", async() => {
-            res = await verifierVerify(mixedListPlain, decoyListPlain, computationIdxs);
+            res = await verifierVerify(plain, decoyValueOrFlipped, computationIdxs);
             assert.isTrue(res, 'the issuance date invalid')
         });
     });
@@ -191,9 +191,9 @@ describe("DID Registry", function() {
             const thresholdTimestamp = "1262304000";  // Unix timestamp: Fri Jan 01 2010 00:00:00
             const issuanceTimestamp = "1500000000";   // Unix timestamp: Fri Jul 14 2017 02:40:00
             let proverSignPublicKey, proverSignPrivateKey, proverSignature;
-            let proverEncryptor, proverDecryptor, mixedListPlain;
+            let proverEncryptor, proverDecryptor, plain;
             let issuanceCiphertext;
-            let mixedListCipher, decoyListPlain;
+            let cipher, decoyValueOrFlipped;
 
             performance.mark("start");
 
@@ -212,9 +212,9 @@ describe("DID Registry", function() {
             let ver = await verifierSignatureVerify(proverSignPublicKey, proverSignature, issuanceCiphertext);
 
             if (ver) {
-                ({mixedListCipher, decoyListPlain, computationIdxs} = await verifierCreateDecoys(proverEvaluator, proverEncryptor, thresholdTimestamp, issuanceCiphertext));
-                mixedListPlain = await proverDecrypt(mixedListCipher, proverDecryptor);
-                await verifierVerify(mixedListPlain, decoyListPlain, computationIdxs).then((res) => {
+                ({cipher, decoyValueOrFlipped, computationIdxs} = await verifierCreateDecoys(proverEvaluator, proverEncryptor, thresholdTimestamp, issuanceCiphertext));
+                plain = await proverDecrypt(cipher, proverDecryptor);
+                await verifierVerify(plain, decoyValueOrFlipped, computationIdxs).then((res) => {
                     assert.isTrue(res, 'the issuance date invalid');
                 })
             }
