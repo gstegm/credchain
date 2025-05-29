@@ -56,7 +56,6 @@ async function HEperformance(runs) {
         );
         // remove result from statistics stack
         proverSetUpStat.push({cpu: generateProverSetUpStat.cpu, memory: generateProverSetUpStat.memory, duration: generateProverSetUpStat.duration});
-        console.log(generateProverSetUpStat.result);
 
         const generateVerifierStat = await measureFunctionExecution(
             verifierCalculate,
@@ -68,7 +67,6 @@ async function HEperformance(runs) {
             generateProverSetUpStat.result.proverEncryptor,
             generateProverSetUpStat.result.verifierEvaluator,
         );
-        console.log(generateVerifierStat.result);
         verifierStat.push({cpu: generateVerifierStat.cpu, memory: generateVerifierStat.memory, duration: generateVerifierStat.duration});
 
         const generateProverDecryptStat = await measureFunctionExecution(
