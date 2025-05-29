@@ -48,7 +48,7 @@ async function proverDecrypt(mixedListCipher, decryptor){
     return mixedListPlain;
 }
 
-async function proverSetUp(timestamp) {
+async function proverSetUp(issuancePlaintext) {
     let instances = await proverGenerateEncryptionKeys();
     let signingKeys = await proverGenerateSignatureKeys();
 
@@ -59,7 +59,7 @@ async function proverSetUp(timestamp) {
     let signPublicKey = signingKeys.publicKey;
     let signPrivateKey = signingKeys.privateKey;
 
-    let issuanceCiphertext = await proverEncrypt(timestamp, encryptor);
+    let issuanceCiphertext = await proverEncrypt(issuancePlaintext, encryptor);
     let signature = await proverSign(signPrivateKey, issuanceCiphertext);
 
     let proverSetUpData =  {

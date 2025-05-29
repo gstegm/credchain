@@ -22,10 +22,10 @@ async function proverEncrypt(value, encryptor) {
     return cipher;
 }
 
-async function proverCalculate(timestamp, signPublicKey, signature, thresholdCiphertext, encryptor, evaluator) {
+async function proverCalculate(issuancePlaintext, signPublicKey, signature, thresholdCiphertext, encryptor, evaluator) {
     let ver = await signatureVerify(signPublicKey, signature, thresholdCiphertext);
     if (ver) {
-        let issuanceCiphertext = await proverEncrypt(timestamp, encryptor);
+        let issuanceCiphertext = await proverEncrypt(issuancePlaintext, encryptor);
         let result = await computeResult(evaluator, thresholdCiphertext, issuanceCiphertext);
         return result;
     }

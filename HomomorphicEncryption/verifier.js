@@ -60,7 +60,7 @@ async function verifierDecrypt(value, decryptor) {
 }
 
 // wrapper functions
-async function verifierSetUp(timestamp) {
+async function verifierSetUp(thresholdPlaintext) {
     let instances = await generateEncryptionKeys();
     let signingKeys = await generateSignatureKeys();
 
@@ -71,7 +71,7 @@ async function verifierSetUp(timestamp) {
     let signPublicKey = signingKeys.publicKey;
     let signPrivateKey = signingKeys.privateKey;
 
-    let thresholdCiphertext = await verifierEncrypt(timestamp, encryptor);
+    let thresholdCiphertext = await verifierEncrypt(thresholdPlaintext, encryptor);
     let signature = await verifierSign(signPrivateKey, thresholdCiphertext);
 
     let verifierSetUpData =  {
