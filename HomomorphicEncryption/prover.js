@@ -11,7 +11,7 @@ async function signatureVerify(pubKey, signature, data) {
 }
 
 async function computeResult(evaluator, cipher1, cipher2) {
-    const compResult = tfhe_rs.greaterThan(cipher1, cipher2, evaluator);
+    const compResult = tfhe_rs.lessThanEqual(cipher1, cipher2, evaluator);
     fs.writeFileSync('./HomomorphicEncryption/proverData.json', JSON.stringify(compResult));
     return compResult;
 }

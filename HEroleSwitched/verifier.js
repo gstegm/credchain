@@ -9,7 +9,7 @@ async function verifierSignatureVerify(pubKey, signature, data) {
 }
 
 async function verifierComputeResult(evaluator, cipher1, cipher2) {
-    const compResult = tfhe_rs.greaterThan(cipher1, cipher2, evaluator);
+    const compResult = tfhe_rs.lessThanEqual(cipher1, cipher2, evaluator);
     fs.writeFileSync('./HomomorphicEncryption/proverData.json', JSON.stringify(compResult));
     return compResult;
 }
@@ -70,13 +70,13 @@ async function verifierCreateDecoys(evaluator, encryptor, thresholdPlaintext, is
 async function verifierVerify(plain, decoyValueOrFlipped, computationIdxs) {
     for (let i = 0; i < 10; i++) {
         if (computationIdxs.includes(i) && !decoyValueOrFlipped[i]) {
-            if (!plain[i]) {
+            if (plain[i]) {
                 console.log("\tVALID Issuance Date");
             } else {
                 console.log("\tINVALID Issuance Date");
             }
-        } else if (computationIdxs.includes(i) && !decoyValueOrFlipped[i]) {
-            if (plain[i]) {
+        } else if (computationIdxs.includes(i) && decoyValueOrFlipped[i]) {
+            if (!plain[i]) {
                 console.log("\tVALID Issuance Date");
             } else {
                 console.log("\tINVALID Issuance Date");
@@ -86,7 +86,7 @@ async function verifierVerify(plain, decoyValueOrFlipped, computationIdxs) {
             console.assert(plain[i] === decoyValueOrFlipped[i]);
         }
     }
-    return decoyValueOrFlipped[computationIdxs[0]] ? plain[computationIdxs[0]] : !plain[computationIdxs[0]];
+    return decoyValueOrFlipped[computationIdxs[0]] ? !plain[computationIdxs[0]] : plain[computationIdxs[0]];
 }
 
 async function verifierCalculate(issuanceCiphertext, signPublicKey, signature, thresholdPlaintext, encryptor, evaluator) {

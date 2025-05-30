@@ -45,7 +45,7 @@ async function verifierDecrypt(value, decryptor) {
     try {
         const resultStudent = tfhe_rs.decrypt(value, decryptor);
         console.log("\tDecoded Result:", resultStudent);
-        if (!resultStudent) {
+        if (resultStudent) {
             console.log("\tVALID Issuance Date");
             return true;
         } else {
