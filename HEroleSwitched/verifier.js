@@ -92,10 +92,10 @@ async function verifierVerify(plain, decoyValueOrFlipped, computationIdxs, n) {
     return decoyValueOrFlipped[computationIdxs[0]] ? !plain[computationIdxs[0]] : plain[computationIdxs[0]];
 }
 
-async function verifierCalculate(issuanceCiphertext, signPublicKey, signature, thresholdPlaintext, encryptor, evaluator) {
+async function verifierCalculate(issuanceCiphertext, signPublicKey, signature, thresholdPlaintext, encryptor, evaluator, n) {
     let ver = await verifierSignatureVerify(signPublicKey, signature, issuanceCiphertext);
     if (ver) {
-        let {cipher, decoyValueOrFlipped, computationIdxs} = await verifierCreateDecoys(evaluator, encryptor, thresholdPlaintext, issuanceCiphertext);
+        let {cipher, decoyValueOrFlipped, computationIdxs} = await verifierCreateDecoys(evaluator, encryptor, thresholdPlaintext, issuanceCiphertext, n);
         return {cipher, decoyValueOrFlipped, computationIdxs};
     }
 }

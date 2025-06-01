@@ -66,6 +66,7 @@ async function HEperformance(runs) {
             degreeThresholdTimestamp,
             generateProverSetUpStat.result.proverEncryptor,
             generateProverSetUpStat.result.verifierEvaluator,
+            10,
         );
         verifierStat.push({cpu: generateVerifierStat.cpu, memory: generateVerifierStat.memory, duration: generateVerifierStat.duration});
 
@@ -81,7 +82,9 @@ async function HEperformance(runs) {
             verifierVerify,
             'verifierVerify',
             generateProverDecryptStat.result,
-            generateVerifierStat.result.decoyValueOrFlipped, generateVerifierStat.result.computationIdxs,
+            generateVerifierStat.result.decoyValueOrFlipped, 
+            generateVerifierStat.result.computationIdxs,
+            10
         );
         verifierVerifyStat.push({cpu: generateVerifierVerifyStat.cpu, memory: generateVerifierVerifyStat.memory, duration: generateVerifierVerifyStat.duration});
     };

@@ -160,7 +160,7 @@ describe("DID Registry", function() {
         });
 
         it("(8-11) Verifier computes the difference between threshold and issuance ciphers", async() => {
-            ({cipher, decoyValueOrFlipped, computationIdxs} = await verifierCreateDecoys(proverEvaluator, proverEncryptor, thresholdTimestamp, issuanceCiphertext));
+            ({cipher, decoyValueOrFlipped, computationIdxs} = await verifierCreateDecoys(proverEvaluator, proverEncryptor, thresholdTimestamp, issuanceCiphertext, 10));
             assert.exists(cipher, 'result was not computed');
             assert.exists(decoyValueOrFlipped, 'result was not computed');
             assert.exists(computationIdxs, 'result was not computed');
@@ -180,7 +180,7 @@ describe("DID Registry", function() {
         });
 
         it("(15) Verifier verifies result", async() => {
-            res = await verifierVerify(plain, decoyValueOrFlipped, computationIdxs);
+            res = await verifierVerify(plain, decoyValueOrFlipped, computationIdxs, 10);
             assert.isTrue(res, 'the issuance date invalid')
         });
     });
@@ -212,9 +212,9 @@ describe("DID Registry", function() {
             let ver = await verifierSignatureVerify(proverSignPublicKey, proverSignature, issuanceCiphertext);
 
             if (ver) {
-                ({cipher, decoyValueOrFlipped, computationIdxs} = await verifierCreateDecoys(proverEvaluator, proverEncryptor, thresholdTimestamp, issuanceCiphertext));
+                ({cipher, decoyValueOrFlipped, computationIdxs} = await verifierCreateDecoys(proverEvaluator, proverEncryptor, thresholdTimestamp, issuanceCiphertext, 10));
                 plain = await proverDecrypt(cipher, proverDecryptor);
-                await verifierVerify(plain, decoyValueOrFlipped, computationIdxs).then((res) => {
+                await verifierVerify(plain, decoyValueOrFlipped, computationIdxs, 10).then((res) => {
                     assert.isTrue(res, 'the issuance date invalid');
                 })
             }
