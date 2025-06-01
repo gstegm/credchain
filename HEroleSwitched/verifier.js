@@ -1,6 +1,8 @@
 const tfhe_rs = require('../tfhe_comparison.node')
 const fs = require('fs');
 const { subtle } = globalThis.crypto;
+const assert = require('assert');
+
 
 async function verifierSignatureVerify(pubKey, signature, data) {
     const ec = new TextEncoder();
@@ -29,7 +31,7 @@ async function verifierEncryptPublicKey(value, encryptor) {
 let random = ()=> crypto.getRandomValues(new Uint32Array(1))[0]/2**32;
 
 async function verifierChoose(n, r) {
-    console.assert (r <= n);
+    assert (r <= n, "r should be smaller than n");
     // https://stackoverflow.com/questions/12987719/javascript-how-to-randomly-sample-items-without-replacement
     let chosen = [];
     for (let i=0;i<n;i++) {
@@ -42,12 +44,13 @@ async function verifierChoose(n, r) {
     return chosen;
 }
 
-async function verifierCreateDecoys(evaluator, encryptor, thresholdPlaintext, issuanceCiphertext) {
+async function verifierCreateDecoys(evaluator, encryptor, thresholdPlaintext, issuanceCiphertext, n) {
+    assert(n % 2 == 0, "n has to be an even integer")
     const decoyValueOrFlipped = [];
     const cipher = [];
-    const computationIdxs = await verifierChoose(10, 5);
+    const computationIdxs = await verifierChoose(n, n/2);
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < n; i++) {
         if (computationIdxs.includes(i)) {
             const thresholdCiphertext = await verifierEncryptPublicKey(thresholdPlaintext, encryptor);
             let compResult = await verifierComputeResult(evaluator, thresholdCiphertext, issuanceCiphertext);
@@ -67,8 +70,8 @@ async function verifierCreateDecoys(evaluator, encryptor, thresholdPlaintext, is
     return {cipher, decoyValueOrFlipped, computationIdxs};
 }
 
-async function verifierVerify(plain, decoyValueOrFlipped, computationIdxs) {
-    for (let i = 0; i < 10; i++) {
+async function verifierVerify(plain, decoyValueOrFlipped, computationIdxs, n) {
+    for (let i = 0; i < n; i++) {
         if (computationIdxs.includes(i) && !decoyValueOrFlipped[i]) {
             if (plain[i]) {
                 console.log("\tVALID Issuance Date");
@@ -83,7 +86,7 @@ async function verifierVerify(plain, decoyValueOrFlipped, computationIdxs) {
             }
 
         } else {
-            console.assert(plain[i] === decoyValueOrFlipped[i]);
+            assert(plain[i] === decoyValueOrFlipped[i], "tampered result");
         }
     }
     return decoyValueOrFlipped[computationIdxs[0]] ? !plain[computationIdxs[0]] : plain[computationIdxs[0]];
