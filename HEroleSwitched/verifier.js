@@ -75,18 +75,9 @@ async function verifierVerify(plain, decoyValueOrFlipped, computationIdxs, n) {
     let invalidCount = 0;
     for (let i = 0; i < n; i++) {
         if (computationIdxs.includes(i) && !decoyValueOrFlipped[i]) {
-            if (plain[i]) {
-                validCount += 1;
-            } else {
-                invalidCount += 1;
-            }
+            plain[i] ? validCount++ : invalidCount++;
         } else if (computationIdxs.includes(i) && decoyValueOrFlipped[i]) {
-            if (!plain[i]) {
-                validCount += 1;
-            } else {
-                invalidCount += 1;
-            }
-
+            !plain[i] ? validCount++ : invalidCount++;
         } else {
             assert(plain[i] === decoyValueOrFlipped[i], "tampered result");
         }
