@@ -71,25 +71,29 @@ async function verifierCreateDecoys(evaluator, encryptor, thresholdPlaintext, is
 }
 
 async function verifierVerify(plain, decoyValueOrFlipped, computationIdxs, n) {
+    let validCount = 0;
+    let invalidCount = 0;
     for (let i = 0; i < n; i++) {
         if (computationIdxs.includes(i) && !decoyValueOrFlipped[i]) {
             if (plain[i]) {
-                console.log("\tVALID Issuance Date");
+                validCount += 1;
             } else {
-                console.log("\tINVALID Issuance Date");
+                invalidCount += 1;
             }
         } else if (computationIdxs.includes(i) && decoyValueOrFlipped[i]) {
             if (!plain[i]) {
-                console.log("\tVALID Issuance Date");
+                validCount += 1;
             } else {
-                console.log("\tINVALID Issuance Date");
+                invalidCount += 1;
             }
 
         } else {
             assert(plain[i] === decoyValueOrFlipped[i], "tampered result");
         }
     }
-    return decoyValueOrFlipped[computationIdxs[0]] ? !plain[computationIdxs[0]] : plain[computationIdxs[0]];
+    assert(validCount === n/2 || invalidCount === n/2, "tampered result");
+    console.log(validCount === n/2 ? "\tVALID Issuance Date" : "\tINVALID Issuance Date");
+    return validCount === n/2;
 }
 
 async function verifierCalculate(issuanceCiphertext, signPublicKey, signature, thresholdPlaintext, encryptor, evaluator, n) {
