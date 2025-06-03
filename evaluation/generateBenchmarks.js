@@ -13,7 +13,7 @@ async function main() {
     await ZKP_performance(numberOfRuns);
     // console.log("\n==================================================");
     await HE_performance(numberOfRuns);
-    await HE_performance_role_switched(numberOfRuns);
+    //await HE_performance_role_switched(numberOfRuns);
 }
 
 main();
