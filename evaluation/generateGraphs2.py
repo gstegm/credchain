@@ -76,7 +76,9 @@ def plot_comparison_box(data, labels, title, y_label, filename, unit):
 data_dict = {
     "cpu": {
         "data": [
-            filter_non_zero(new_zkp_metrics['GenCPU']), filter_non_zero(new_zkp_metrics['VerCPU']),
+            filter_non_zero(new_zkp_metrics['GenCPU']), filter_non_zero(new_zkp_metrics['VerCPU']), 
+            filter_non_zero(original_he_metrics['SetupCPU']), filter_non_zero(original_he_metrics['CalculationCPU']),
+            filter_non_zero(original_he_metrics['VerificationCPU']),
             filter_non_zero(new_he_metrics['SetupCPU']), filter_non_zero(new_he_metrics['CalculationCPU']),
             filter_non_zero(new_he_metrics['VerificationCPU'])],
         "labels": x_labels,
@@ -88,6 +90,7 @@ data_dict = {
     "memory": {
         "data": [
             new_zkp_metrics['GenMemory'], new_zkp_metrics['VerMemory'],
+            original_he_metrics['SetupMemory'], original_he_metrics['CalculationMemory'], original_he_metrics['VerificationMemory'],
             new_he_metrics['SetupMemory'], new_he_metrics['CalculationMemory'], new_he_metrics['VerificationMemory']],
         "labels": x_labels,
         "title": 'Memory Usage',
@@ -98,6 +101,7 @@ data_dict = {
     "time": {
         "data": [
             new_zkp_metrics['GenDuration'], new_zkp_metrics['VerDuration'],
+            original_he_metrics['SetupDuration'], original_he_metrics['CalculationDuration'], original_he_metrics['VerificationDuration'],
             new_he_metrics['SetupDuration'], new_he_metrics['CalculationDuration'], new_he_metrics['VerificationDuration']],
         "labels": x_labels,
         "title": 'Time Performance',
@@ -108,20 +112,24 @@ data_dict = {
 }
 
 def get_average(data):
-    # print(data)
-
     avg_zkp_gen = [np.mean(d) for d in data[0]]
     avg_zkp_ver = [np.mean(d) for d in data[1]]
     avg_zkp = np.concatenate((avg_zkp_gen, avg_zkp_ver), axis=None)
     avg_zkp_mean = np.mean(avg_zkp)
 
-    avg_he_gen = [np.mean(d) for d in data[2]]
-    avg_he_cal = [np.mean(d) for d in data[3]]
-    avg_he_ver = [np.mean(d) for d in data[4]]
-    avg_he = np.concatenate((avg_he_gen, avg_he_cal, avg_he_ver), axis=None)
-    avg_he_mean = np.mean(avg_he)
+    avg_orig_he_gen = [np.mean(d) for d in data[2]]
+    avg_orig_he_cal = [np.mean(d) for d in data[3]]
+    avg_orig_he_ver = [np.mean(d) for d in data[4]]
+    avg_orig_he = np.concatenate((avg_orig_he_gen, avg_orig_he_cal, avg_orig_he_ver), axis=None)
+    avg_orig_he_mean = np.mean(avg_orig_he)
 
-    return [avg_zkp_mean, avg_he_mean]
+    avg_new_he_gen = [np.mean(d) for d in data[5]]
+    avg_new_he_cal = [np.mean(d) for d in data[6]]
+    avg_new_he_ver = [np.mean(d) for d in data[7]]
+    avg_new_he = np.concatenate((avg_new_he_gen, avg_new_he_cal, avg_new_he_ver), axis=None)
+    avg_new_he_mean = np.mean(avg_new_he)
+
+    return [avg_zkp_mean, avg_orig_he_mean, avg_new_he_mean]
 
 # CPU plot
 # y-axis: percentage range
@@ -143,19 +151,8 @@ def plot_comparison_bar(data, labels, title, y_label, filename, unit):
     memory_data = get_average(data_dict['memory']['data'])
     time_data = get_average(data_dict['time']['data'])
 
-    # avg_zkp_gen = [np.mean(d) for d in data[0]]
-    # avg_zkp_ver = [np.mean(d) for d in data[1]]
-    # avg_zkp = np.concatenate((avg_zkp_gen, avg_zkp_ver), axis=None)
-    # avg_zkp_mean = np.mean(avg_zkp)
-
-    # avg_he_gen = [np.mean(d) for d in data[2]]
-    # avg_he_cal = [np.mean(d) for d in data[3]]
-    # avg_he_ver = [np.mean(d) for d in data[4]]
-    # avg_he = np.concatenate((avg_he_gen, avg_he_cal, avg_he_ver), axis=None)
-    # avg_he_mean = np.mean(avg_he)
-
     data = [cpu_data, memory_data, time_data]
-    labels = ['ZKP', 'HE']
+    labels = ['ZKP', 'Orig.\n HE', 'Comp.\n HE']
 
     titles = [data_dict['cpu']['title'], data_dict['memory']['title'], data_dict['time']['title']]
     y_labels = [data_dict['cpu']['y_label'], data_dict['memory']['y_label'], data_dict['time']['y_label']]
@@ -189,7 +186,7 @@ def plot_comparison_bar(data, labels, title, y_label, filename, unit):
                 ax[i].text(labels[j], round(v, 2) + 10, str(round(v, 2)), fontsize=8, horizontalalignment="center")
         ax[i].set_title(titles[i], fontsize=10)
         ax[i].set_ylabel(y_labels[i])
-        ax[i].set_xlim(-1 + width / 2, 2 - width / 2 )
+        ax[i].set_xlim(-1 + width / 3, 3 - width / 3 )
 
     plt.savefig(f"./evaluation/{filename}.png")
     plt.show()
@@ -207,16 +204,16 @@ plot_comparison_box(
      '%'
 )
 
-# plot_comparison_bar(
-#     [filter_non_zero(new_zkp_metrics['GenCPU']), filter_non_zero(new_zkp_metrics['VerCPU']),
-#      filter_non_zero(new_he_metrics['SetupCPU']), filter_non_zero(new_he_metrics['CalculationCPU']),
-#      filter_non_zero(new_he_metrics['VerificationCPU'])],
-#      x_labels,
-#      'CPU Usage',
-#      'CPU Usage (%)',
-#      'cpu_usage_comparison',
-#      '%'
-# )
+plot_comparison_bar(
+    [filter_non_zero(new_zkp_metrics['GenCPU']), filter_non_zero(new_zkp_metrics['VerCPU']),
+     filter_non_zero(new_he_metrics['SetupCPU']), filter_non_zero(new_he_metrics['CalculationCPU']),
+     filter_non_zero(new_he_metrics['VerificationCPU'])],
+     x_labels,
+     'CPU Usage',
+     'CPU Usage (%)',
+     'cpu_usage_comparison',
+     '%'
+)
 
 # Memory Usage Comparison
 plot_comparison_box(
