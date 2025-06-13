@@ -4,9 +4,11 @@ import numpy as np
 
 new_zkp_file_path = './evaluation/ZKP_performance_data.csv'
 new_he_file_path = './evaluation/HE_performance_data.csv'
+original_he_file_path = './evaluation/HE_performance_data_orig.csv'
 
 new_zkp_data = pd.read_csv(new_zkp_file_path)
 new_he_data = pd.read_csv(new_he_file_path)
+original_he_data = pd.read_csv(original_he_file_path)
 
 # Extract relevant columns for comparison
 new_zkp_metrics = new_zkp_data[['generateZKPCPU', 'generateZKPMemory', 'generateZKPDuration',
@@ -16,9 +18,17 @@ new_he_metrics = new_he_data[['verifierSetUpCPU', 'verifierSetUpMemory', 'verifi
                               'proverCPU', 'proverMemory', 'proverTime',
                               'verifierVerifyCPU', 'verifierVerifyMemory', 'verifierVerifyTime']]
 
+
+original_he_metrics = original_he_data[['verifierSetUpCPU', 'verifierSetUpMemory', 'verifierSetUpTime',
+                              'proverCPU', 'proverMemory', 'proverTime',
+                              'verifierVerifyCPU', 'verifierVerifyMemory', 'verifierVerifyTime']]
+
 # Rename columns for better comparison
 new_zkp_metrics.columns = ['GenCPU', 'GenMemory', 'GenDuration', 'VerCPU', 'VerMemory', 'VerDuration']
 new_he_metrics.columns = ['SetupCPU', 'SetupMemory', 'SetupDuration',
+                          'CalculationCPU', 'CalculationMemory', 'CalculationDuration',
+                          'VerificationCPU', 'VerificationMemory', 'VerificationDuration']
+original_he_metrics.columns = ['SetupCPU', 'SetupMemory', 'SetupDuration',
                           'CalculationCPU', 'CalculationMemory', 'CalculationDuration',
                           'VerificationCPU', 'VerificationMemory', 'VerificationDuration']
 
@@ -28,23 +38,6 @@ def filter_non_zero(data):
     return [value for value in data if value > 0]
 
 def plot_comparison_box(data, labels, title, y_label, filename, unit):
-
-    # avg_zkp_gen = [np.mean(d) for d in data[0]]
-    # avg_zkp_ver = [np.mean(d) for d in data[1]]
-    # avg_zkp = np.concatenate((avg_zkp_gen, avg_zkp_ver), axis=None)
-    # avg_zkp_mean = np.mean(avg_zkp)
-
-    # avg_he_gen = [np.mean(d) for d in data[2]]
-    # avg_he_cal = [np.mean(d) for d in data[3]]
-    # avg_he_ver = [np.mean(d) for d in data[4]]
-    # avg_he = np.concatenate((avg_he_gen, avg_he_cal, avg_he_ver), axis=None)
-    # avg_he_mean = np.mean(avg_he)
-
-    # data_ = [cpu_zkp, cpu_he]
-    # labels_ = ['ZKP', 'HE']
-
-    # print(data)
-    # print(data_)
 
     fig, ax = plt.subplots(figsize=(10, 8))
 
@@ -74,63 +67,11 @@ def plot_comparison_box(data, labels, title, y_label, filename, unit):
     med_vals = [np.median(d) for d in data]
     min_vals = [np.min(d) for d in data]
 
-    # Create table with units
-    # table_data = [
-    #     ["MAX"] + [f"{val:.2f} {unit}" for val in max_vals],
-    #     ["AVG"] + [f"{val:.2f} {unit}" for val in avg_vals],
-    #     ["MEDIAN"] + [f"{val:.2f} {unit}" for val in med_vals],
-    #     ["MIN"] + [f"{val:.2f} {unit}" for val in min_vals],
-    # ]
-
-    # n_columns = len(labels) + 1
-    # col_widths = [0.09] + [0.91 / (n_columns - 1)] * (n_columns - 1)  # adjust column widths
-
-    # table = plt.table(cellText=table_data, loc='bottom', cellLoc='center',
-    #                   colWidths=col_widths, bbox=[-0.1, -0.35, 1.1, 0.28])  # left, bottom, right, top
-    # table.auto_set_font_size(False)
-    # table.set_fontsize(10)
-
-    # # Set the borderlines to be thinner
-    # for key, cell in table.get_celld().items():
-    #     cell.set_linewidth(0.5)
 
     plt.subplots_adjust(left=0.2, bottom=0.4)
     plt.tight_layout(rect=[0.02, 0.1, 1, 0.95])
     plt.savefig(f"./evaluation/{filename}.png")
     plt.show()
-
-
-
-cpu_data = [[
-     filter_non_zero(new_zkp_metrics['GenCPU']), filter_non_zero(new_zkp_metrics['VerCPU']),
-     filter_non_zero(new_he_metrics['SetupCPU']), filter_non_zero(new_he_metrics['CalculationCPU']),
-     filter_non_zero(new_he_metrics['VerificationCPU'])],
-     x_labels,
-     'CPU Usage',
-     'CPU Usage (%)',
-     'cpu_usage_comparison',
-     '%'
-    ]
-
-memory_data = [[
-     new_zkp_metrics['GenMemory'], new_zkp_metrics['VerMemory'],
-     new_he_metrics['SetupMemory'], new_he_metrics['CalculationMemory'], new_he_metrics['VerificationMemory']],
-     x_labels,
-     'Memory Usage',
-     'Memory Usage (MB)',
-     'memory_usage_comparison',
-     'MB'
-    ]
-
-time_data = [[
-     new_zkp_metrics['GenDuration'], new_zkp_metrics['VerDuration'],
-     new_he_metrics['SetupDuration'], new_he_metrics['CalculationDuration'], new_he_metrics['VerificationDuration']],
-     x_labels,
-     'Time Performance',
-     'Duration (ms)',
-     'duration_comparison',
-     'ms'
-    ]
 
 data_dict = {
     "cpu": {
@@ -165,8 +106,6 @@ data_dict = {
         "unit": 'ms'
     },
 }
-
-all_data = [cpu_data, memory_data, time_data]
 
 def get_average(data):
     # print(data)
@@ -258,37 +197,37 @@ def plot_comparison_bar(data, labels, title, y_label, filename, unit):
 
 
 # CPU Usage Comparison (filter out 0 values)
-# plot_comparison_box(
-#     [filter_non_zero(new_zkp_metrics['GenCPU']), filter_non_zero(new_zkp_metrics['VerCPU']),
-#      filter_non_zero(new_he_metrics['SetupCPU']), filter_non_zero(new_he_metrics['CalculationCPU']), filter_non_zero(new_he_metrics['VerificationCPU'])],
-#      x_labels,
-#      'CPU Usage per Function',
-#      'CPU Usage (%)',
-#      'cpu_usage_comparison',
-#      '%'
-# )
-
-plot_comparison_bar(
+plot_comparison_box(
     [filter_non_zero(new_zkp_metrics['GenCPU']), filter_non_zero(new_zkp_metrics['VerCPU']),
-     filter_non_zero(new_he_metrics['SetupCPU']), filter_non_zero(new_he_metrics['CalculationCPU']),
-     filter_non_zero(new_he_metrics['VerificationCPU'])],
+     filter_non_zero(new_he_metrics['SetupCPU']), filter_non_zero(new_he_metrics['CalculationCPU']), filter_non_zero(new_he_metrics['VerificationCPU'])],
      x_labels,
-     'CPU Usage',
+     'CPU Usage per Function',
      'CPU Usage (%)',
      'cpu_usage_comparison',
      '%'
 )
 
-# Memory Usage Comparison
-# plot_comparison_box(
-#     [new_zkp_metrics['GenMemory'], new_zkp_metrics['VerMemory'], new_he_metrics['SetupMemory'],
-#      new_he_metrics['CalculationMemory'], new_he_metrics['VerificationMemory']],
-#     x_labels,
-#     'Memory Usage per Function',
-#     'Memory Usage (MB)',
-#     'memory_usage_comparison',
-#     'MB'
+# plot_comparison_bar(
+#     [filter_non_zero(new_zkp_metrics['GenCPU']), filter_non_zero(new_zkp_metrics['VerCPU']),
+#      filter_non_zero(new_he_metrics['SetupCPU']), filter_non_zero(new_he_metrics['CalculationCPU']),
+#      filter_non_zero(new_he_metrics['VerificationCPU'])],
+#      x_labels,
+#      'CPU Usage',
+#      'CPU Usage (%)',
+#      'cpu_usage_comparison',
+#      '%'
 # )
+
+# Memory Usage Comparison
+plot_comparison_box(
+    [new_zkp_metrics['GenMemory'], new_zkp_metrics['VerMemory'], new_he_metrics['SetupMemory'],
+     new_he_metrics['CalculationMemory'], new_he_metrics['VerificationMemory']],
+    x_labels,
+    'Memory Usage per Function',
+    'Memory Usage (MB)',
+    'memory_usage_comparison',
+    'MB'
+)
 
 # Memory Usage Comparison
 # plot_comparison_bar(
@@ -322,3 +261,36 @@ plot_comparison_box(
 #      'duration_comparison',
 #      'ms'
 # )
+
+
+# comparison with original HE implementation
+x_labels = ['Original \nHE Setup', 'Original \nHE Calculation', 'Original \nHE Verification', 'Comparison \nHE Setup', 'Comparison \nHE Calculation', 'Comparison \nHE Verification']
+
+plot_comparison_box(
+    [filter_non_zero(original_he_metrics['SetupCPU']), filter_non_zero(original_he_metrics['CalculationCPU']), filter_non_zero(original_he_metrics['VerificationCPU']),
+     filter_non_zero(new_he_metrics['SetupCPU']), filter_non_zero(new_he_metrics['CalculationCPU']), filter_non_zero(new_he_metrics['VerificationCPU'])],
+     x_labels,
+     'CPU Usage per Function',
+     'CPU Usage (%)',
+     'original_cpu_usage_comparison',
+     '%'
+)
+
+plot_comparison_box(
+    [original_he_metrics['SetupMemory'], original_he_metrics['CalculationMemory'], original_he_metrics['VerificationMemory'], new_he_metrics['SetupMemory'], new_he_metrics['CalculationMemory'], new_he_metrics['VerificationMemory']],
+    x_labels,
+    'Memory Usage per Function',
+    'Memory Usage (MB)',
+    'original_memory_usage_comparison',
+    'MB'
+)
+
+plot_comparison_box(
+    [original_he_metrics['SetupDuration'], original_he_metrics['CalculationDuration'], original_he_metrics['VerificationDuration'], new_he_metrics['SetupDuration'],
+     new_he_metrics['CalculationDuration'], new_he_metrics['VerificationDuration']],
+    x_labels,
+    'Duration per Function',
+    'Duration (ms)',
+    'original_duration_comparison',
+    'ms'
+)

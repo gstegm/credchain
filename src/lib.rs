@@ -88,11 +88,11 @@ fn less_than_equal(cipher_a_ser: Vec<u8>, cipher_b_ser: Vec<u8>, compressed_serv
     //set_server_key(gpu_key);
     set_server_key(server_key);
 
-    let gtresult = cipher_a.le(cipher_b.clone());
-    let mut gtresult_ser = vec![];
-    safe_serialize(&gtresult, &mut gtresult_ser, 1 << 20).unwrap();
+    let leresult = cipher_a.le(cipher_b.clone());
+    let mut leresult_ser = vec![];
+    safe_serialize(&leresult, &mut leresult_ser, 1 << 20).unwrap();
 
-    return gtresult_ser;
+    return leresult_ser;
 }
 
 #[napi]
