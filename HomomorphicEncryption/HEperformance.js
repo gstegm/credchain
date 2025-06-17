@@ -63,7 +63,7 @@ async function HEperformance(runs) {
             generateVerifierSetUpStat.result.signPublicKey,
             generateVerifierSetUpStat.result.verifierSignature,
             generateVerifierSetUpStat.result.thresholdCiphertext,
-            generateVerifierSetUpStat.result.verifierEncryptor,
+            generateVerifierSetUpStat.result.verifierPublicKey,
             generateVerifierSetUpStat.result.proverEvaluator,
         );
         proverStat.push({cpu: generateProverStat.cpu, memory: generateProverStat.memory, duration: generateProverStat.duration});
@@ -72,7 +72,7 @@ async function HEperformance(runs) {
             verifierProve,
             'verifierProve',
             generateProverStat.result,
-            generateVerifierSetUpStat.result.verifierDecryptor,
+            generateVerifierSetUpStat.result.verifierClientKey,
         );
         verifierVerifyStat.push({cpu: generateVerifierVerifyStat.cpu, memory: generateVerifierVerifyStat.memory, duration: generateVerifierVerifyStat.duration});
     };

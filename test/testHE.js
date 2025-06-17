@@ -161,7 +161,7 @@ describe("DID Registry", function() {
 
         it("Prover performs homomorphic calculation and sends it to verifier", async function() {
             performance.mark("StartUser1");
-            proverData = await proverCalculate(degreeIssuanceTimestamp, verifierSetUpData.signPublicKey, verifierSetUpData.verifierSignature, verifierSetUpData.thresholdCiphertext, verifierSetUpData.verifierEncryptor, verifierSetUpData.proverEvaluator);
+            proverData = await proverCalculate(degreeIssuanceTimestamp, verifierSetUpData.signPublicKey, verifierSetUpData.verifierSignature, verifierSetUpData.thresholdCiphertext, verifierSetUpData.verifierPublicKey, verifierSetUpData.proverEvaluator);
             performance.mark("EndUser1");
             const HEmeasureUser1 = performance.measure(
                 "HEuser1",
@@ -178,7 +178,7 @@ describe("DID Registry", function() {
 
         it("* Verifier verifies the result and checks bitmap", async function() {
             performance.mark("StartVerifier1");
-            const isVerified = await verifierDecrypt(proverData, verifierSetUpData.verifierDecryptor);
+            const isVerified = await verifierDecrypt(proverData, verifierSetUpData.verifierClientKey);
             performance.mark("EndVerifier1");
             const HEmeasureVerifier1 = performance.measure(
                 "HEverifier1",
@@ -216,7 +216,7 @@ describe("DID Registry", function() {
 
         it("Prover performs homomorphic calculation and sends it to verifier", async function() {
             performance.mark("StartUser2");
-            proverData = await proverCalculate(degreeIssuanceTimestamp, verifierSetUpData.signPublicKey, verifierSetUpData.verifierSignature, verifierSetUpData.thresholdCiphertext, verifierSetUpData.verifierEncryptor, verifierSetUpData.proverEvaluator);
+            proverData = await proverCalculate(degreeIssuanceTimestamp, verifierSetUpData.signPublicKey, verifierSetUpData.verifierSignature, verifierSetUpData.thresholdCiphertext, verifierSetUpData.verifierPublicKey, verifierSetUpData.proverEvaluator);
             performance.mark("EndUser2");
             const HEmeasureUser2 = performance.measure(
                 "HEuser2",
@@ -233,7 +233,7 @@ describe("DID Registry", function() {
 
         it("Verifier verifies the result", async function() {
             performance.mark("StartVerifier2");
-            const isVerified = await verifierDecrypt(proverData, verifierSetUpData.verifierDecryptor);
+            const isVerified = await verifierDecrypt(proverData, verifierSetUpData.verifierClientKey);
             performance.mark("EndVerifier2");
             const HEmeasureVerifier2 = performance.measure(
                 "HEverifier2",
@@ -270,7 +270,7 @@ describe("DID Registry", function() {
 
         it("Prover performs homomorphic calculation and sends it to verifier", async function() {
             performance.mark("StartUser3");
-            proverData = await proverCalculate(degreeIssuanceTimestamp, verifierSetUpData.signPublicKey, verifierSetUpData.verifierSignature, verifierSetUpData.thresholdCiphertext, verifierSetUpData.verifierEncryptor, verifierSetUpData.proverEvaluator);
+            proverData = await proverCalculate(degreeIssuanceTimestamp, verifierSetUpData.signPublicKey, verifierSetUpData.verifierSignature, verifierSetUpData.thresholdCiphertext, verifierSetUpData.verifierPublicKey, verifierSetUpData.proverEvaluator);
             performance.mark("EndUser3");
             const HEmeasureUser3 = performance.measure(
                 "HEuser3",
@@ -291,7 +291,7 @@ describe("DID Registry", function() {
 
         it("Verifier verifies the result and checks bitmap", async function() {
             performance.mark("StartVerifier3");
-            const isVerified = await verifierDecrypt(proverData, verifierSetUpData.verifierDecryptor);
+            const isVerified = await verifierDecrypt(proverData, verifierSetUpData.verifierClientKey);
             performance.mark("EndVerifier3");
             const HEmeasureVerifier3 = performance.measure(
                 "HEverifier3",

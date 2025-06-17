@@ -10,10 +10,10 @@ async function main() {
     // Use 50 as the default value if no valid argument is provided
     const numberOfRuns = isNaN(runs) ? 300 : runs;
 
-    await ZKP_performance(numberOfRuns);
+    //await ZKP_performance(numberOfRuns);
     // console.log("\n==================================================");
-    await HE_performance(numberOfRuns);
-    //await HE_performance_role_switched(numberOfRuns);
+    //await HE_performance(numberOfRuns);
+    await HE_performance_role_switched(numberOfRuns);
 }
 
 main();

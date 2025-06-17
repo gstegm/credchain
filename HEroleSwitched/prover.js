@@ -8,9 +8,9 @@ async function proverGenerateEncryptionKeys() {
     const keys = tfhe_rs.getKeys();
 
     const instances = {
-        decryptor: keys[0],
+        clientKey: keys[0],
         evaluator: keys[1],
-        encryptor: keys[2],
+        publicKey: keys[2],
     }
     return instances;
 }
@@ -28,9 +28,9 @@ async function proverGenerateSignatureKeys(namedCurve = 'P-521') {
   }
 
 
-async function proverEncrypt(value, encryptor) {
+async function proverEncrypt(value, clientKey) {
     const pValue = parseInt(value);
-    const cipher = await tfhe_rs.encryptPublicKey(pValue, encryptor);
+    const cipher = await tfhe_rs.encrypt(pValue, clientKey);
     return cipher;
 }
 
@@ -40,10 +40,10 @@ async function proverSign(key, data) {
     return signature;
 }
 
-async function proverDecrypt(mixedListCipher, decryptor){
+async function proverDecrypt(mixedListCipher, clientKey){
     let mixedListPlain = [];
     for (let i = 0; i < 10; i++) {
-        mixedListPlain.push(tfhe_rs.decrypt(mixedListCipher[i], decryptor));
+        mixedListPlain.push(tfhe_rs.decrypt(mixedListCipher[i], clientKey));
     }
     return mixedListPlain;
 }
@@ -52,22 +52,22 @@ async function proverSetUp(issuancePlaintext) {
     let instances = await proverGenerateEncryptionKeys();
     let signingKeys = await proverGenerateSignatureKeys();
 
-    let encryptor = instances.encryptor;
-    let decryptor = instances.decryptor;
+    let publicKey = instances.publicKey;
+    let clientKey = instances.clientKey;
     let evaluator  = instances.evaluator;
 
     let signPublicKey = signingKeys.publicKey;
     let signPrivateKey = signingKeys.privateKey;
 
-    let issuanceCiphertext = await proverEncrypt(issuancePlaintext, encryptor);
+    let issuanceCiphertext = await proverEncrypt(issuancePlaintext, clientKey);
     let signature = await proverSign(signPrivateKey, issuanceCiphertext);
 
     let proverSetUpData =  {
         signPublicKey: signPublicKey,
         proverSignature: signature,
         issuanceCiphertext: issuanceCiphertext,
-        proverEncryptor: encryptor,
-        proverDecryptor: decryptor,
+        proverPublicKey: publicKey,
+        proverClientKey: clientKey,
         verifierEvaluator: evaluator,
     }
 

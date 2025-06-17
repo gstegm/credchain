@@ -16,13 +16,13 @@ async function verifierComputeResult(evaluator, cipher1, cipher2) {
     return compResult;
 }
 
-async function verifierEncryptPublicKey(value, encryptor) {
+async function verifierEncryptPublicKey(value, publicKey) {
     if (typeof(value) == "boolean") {
-        const cipher = await tfhe_rs.encryptBoolPublicKey(value, encryptor);
+        const cipher = await tfhe_rs.encryptBoolPublicKey(value, publicKey);
         return cipher;
     } else {
         const pValue = parseInt(value);
-        const cipher = await tfhe_rs.encryptPublicKey(pValue, encryptor);
+        const cipher = await tfhe_rs.encryptPublicKey(pValue, publicKey);
         return cipher;
     }
 }
@@ -44,7 +44,7 @@ async function verifierChoose(n, r) {
     return chosen;
 }
 
-async function verifierCreateDecoys(evaluator, encryptor, thresholdPlaintext, issuanceCiphertext, n) {
+async function verifierCreateDecoys(evaluator, publicKey, thresholdPlaintext, issuanceCiphertext, n) {
     assert(n % 2 == 0, "n has to be an even integer")
     const decoyValueOrFlipped = [];
     const cipher = [];
@@ -52,7 +52,7 @@ async function verifierCreateDecoys(evaluator, encryptor, thresholdPlaintext, is
 
     for (let i = 0; i < n; i++) {
         if (computationIdxs.includes(i)) {
-            const thresholdCiphertext = await verifierEncryptPublicKey(thresholdPlaintext, encryptor);
+            const thresholdCiphertext = await verifierEncryptPublicKey(thresholdPlaintext, publicKey);
             let compResult = await verifierComputeResult(evaluator, thresholdCiphertext, issuanceCiphertext);
             const flipBit = Boolean(Math.floor(random() * 2));
             if (flipBit) {
@@ -62,7 +62,7 @@ async function verifierCreateDecoys(evaluator, encryptor, thresholdPlaintext, is
             cipher.push(compResult);
         } else {
             const decoyPlain = Boolean(Math.floor(random() * 2));
-            const decoyCipher = await verifierEncryptPublicKey(decoyPlain, encryptor);
+            const decoyCipher = await verifierEncryptPublicKey(decoyPlain, publicKey);
             decoyValueOrFlipped.push(decoyPlain);
             cipher.push(decoyCipher);
         }
@@ -86,10 +86,10 @@ async function verifierVerify(plain, decoyValueOrFlipped, computationIdxs, n) {
     return validCount === n/2;
 }
 
-async function verifierCalculate(issuanceCiphertext, signPublicKey, signature, thresholdPlaintext, encryptor, evaluator, n) {
+async function verifierCalculate(issuanceCiphertext, signPublicKey, signature, thresholdPlaintext, publicKey, evaluator, n) {
     let ver = await verifierSignatureVerify(signPublicKey, signature, issuanceCiphertext);
     if (ver) {
-        let {cipher, decoyValueOrFlipped, computationIdxs} = await verifierCreateDecoys(evaluator, encryptor, thresholdPlaintext, issuanceCiphertext, n);
+        let {cipher, decoyValueOrFlipped, computationIdxs} = await verifierCreateDecoys(evaluator, publicKey, thresholdPlaintext, issuanceCiphertext, n);
         return {cipher, decoyValueOrFlipped, computationIdxs};
     }
 }

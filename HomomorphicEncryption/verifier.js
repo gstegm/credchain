@@ -7,9 +7,9 @@ async function generateEncryptionKeys() {
     const keys = tfhe_rs.getKeys();
 
     const instances = {
-        decryptor: keys[0],
+        clientKey: keys[0],
         evaluator: keys[1],
-        encryptor: keys[2],
+        publicKey: keys[2],
     }
     return instances;
 }
@@ -34,16 +34,16 @@ async function verifierSign(key, data) {
     return signature;
 }
 
-async function verifierEncrypt(value, encryptor) {
+async function verifierEncrypt(value, clientKey) {
     const pValue = parseInt(value);
-    const cipher = tfhe_rs.encryptPublicKey(pValue, encryptor);
+    const cipher = tfhe_rs.encrypt(pValue, clientKey);
     //console.log('size cipher', Buffer.byteLength(JSON.stringify(cipher.save())))
     return cipher;
 }
 
-async function verifierDecrypt(value, decryptor) {
+async function verifierDecrypt(value, clientKey) {
     try {
-        const resultStudent = tfhe_rs.decrypt(value, decryptor);
+        const resultStudent = tfhe_rs.decrypt(value, clientKey);
         console.log("\tDecoded Result:", resultStudent);
         if (resultStudent) {
             console.log("\tVALID Issuance Date");
@@ -64,22 +64,22 @@ async function verifierSetUp(thresholdPlaintext) {
     let instances = await generateEncryptionKeys();
     let signingKeys = await generateSignatureKeys();
 
-    let encryptor = instances.encryptor;
-    let decryptor = instances.decryptor;
+    let publicKey = instances.publicKey;
+    let clientKey = instances.clientKey;
     let evaluator  = instances.evaluator;
 
     let signPublicKey = signingKeys.publicKey;
     let signPrivateKey = signingKeys.privateKey;
 
-    let thresholdCiphertext = await verifierEncrypt(thresholdPlaintext, encryptor);
+    let thresholdCiphertext = await verifierEncrypt(thresholdPlaintext, clientKey);
     let signature = await verifierSign(signPrivateKey, thresholdCiphertext);
 
     let verifierSetUpData =  {
         signPublicKey: signPublicKey,
         verifierSignature: signature,
         thresholdCiphertext: thresholdCiphertext,
-        verifierEncryptor: encryptor,
-        verifierDecryptor: decryptor,
+        verifierPublicKey: publicKey,
+        verifierClientKey: clientKey,
         proverEvaluator: evaluator,
     }
 
@@ -89,8 +89,8 @@ async function verifierSetUp(thresholdPlaintext) {
     return verifierSetUpData;
 }
 
-async function verifierProve(proverResult, decryptor) {
-    let result = await verifierDecrypt(proverResult, decryptor);
+async function verifierProve(proverResult, clientKey) {
+    let result = await verifierDecrypt(proverResult, clientKey);
     return result;
 }
 

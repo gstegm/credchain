@@ -119,7 +119,7 @@ describe("DID Registry", function() {
         const thresholdTimestamp = "1262304000";  // Unix timestamp: Fri Jan 01 2010 00:00:00
         const issuanceTimestamp = "1500000000";   // Unix timestamp: Fri Jul 14 2017 02:40:00
         let verifierSignPublicKey, verifierSignPrivateKey, verifierSignature;
-        let verifierEncryptor, verifierDecryptor;
+        let verifierPublicKey, verifierClientKey;
         let proverEvaluator, proverResult;
         let thresholdCiphertext, issuanceCiphertext;
 
@@ -127,19 +127,19 @@ describe("DID Registry", function() {
             let verifierInstances = await generateEncryptionKeys();
             let signingKeys = await generateSignatureKeys();
 
-            verifierEncryptor = verifierInstances.encryptor;
-            verifierDecryptor = verifierInstances.decryptor;
+            verifierPublicKey = verifierInstances.publicKey;
+            verifierClientKey = verifierInstances.clientKey;
             proverEvaluator   = verifierInstances.evaluator;
             verifierSignPublicKey = signingKeys.publicKey;
             verifierSignPrivateKey = signingKeys.privateKey;
 
             assert.exists(verifierSignPublicKey, 'signing public key was not generated');
             assert.exists(verifierSignPrivateKey, 'signing private key was not generated');
-            assert.exists(verifierEncryptor, "encryptor instance was not generated");
+            assert.exists(verifierPublicKey, "HE public key instance was not generated");
         });
 
         it("(3) Verifier encrypts threshold timestamp", async() => {
-            thresholdCiphertext = await verifierEncrypt(thresholdTimestamp, verifierEncryptor);
+            thresholdCiphertext = await verifierEncrypt(thresholdTimestamp, verifierPublicKey);
             assert.exists(thresholdCiphertext, 'theshold data was not encrypted');
         });
 
@@ -159,7 +159,7 @@ describe("DID Registry", function() {
         });
 
         it("(8) Prover encrypts issuance timestamp", async() => {
-            issuanceCiphertext = await proverEncrypt(issuanceTimestamp, verifierEncryptor);
+            issuanceCiphertext = await proverEncrypt(issuanceTimestamp, verifierPublicKey);
             assert.exists(issuanceCiphertext, 'issuance data was not encrypted');
         });
 
@@ -174,7 +174,7 @@ describe("DID Registry", function() {
         });
 
         it("(13) Verifier decrypts result and verifies", async() => {
-            await verifierDecrypt(proverResult, verifierDecryptor).then((res) => {
+            await verifierDecrypt(proverResult, verifierClientKey).then((res) => {
                 assert.isTrue(res, 'the issuance date invalid')
             });
         });
@@ -186,7 +186,7 @@ describe("DID Registry", function() {
             const thresholdTimestamp = "1262304000";  // Unix timestamp: Fri Jan 01 2010 00:00:00
             const issuanceTimestamp = "1500000000";   // Unix timestamp: Fri Jul 14 2017 02:40:00
             let verifierSignPublicKey, verifierSignPrivateKey, verifierSignature;
-            let verifierEncryptor, verifierDecryptor;
+            let verifierPublicKey, verifierClientKey;
             let proverEvaluator, proverResult;
             let thresholdCiphertext, issuanceCiphertext;
 
@@ -195,22 +195,22 @@ describe("DID Registry", function() {
             let verifierInstances = await generateEncryptionKeys();
             let signingKeys = await generateSignatureKeys();
 
-            verifierEncryptor = verifierInstances.encryptor;
-            verifierDecryptor = verifierInstances.decryptor;
+            verifierPublicKey = verifierInstances.publicKey;
+            verifierClientKey = verifierInstances.clientKey;
             proverEvaluator   = verifierInstances.evaluator;
 
             verifierSignPublicKey = signingKeys.publicKey;
             verifierSignPrivateKey = signingKeys.privateKey;
 
-            thresholdCiphertext = await verifierEncrypt(thresholdTimestamp, verifierEncryptor);
+            thresholdCiphertext = await verifierEncrypt(thresholdTimestamp, verifierPublicKey);
             verifierSignature = await verifierSign(verifierSignPrivateKey, thresholdCiphertext);
 
             let ver = await signatureVerify(verifierSignPublicKey, verifierSignature, thresholdCiphertext);
 
             if (ver) {
-                issuanceCiphertext = await proverEncrypt(issuanceTimestamp, verifierEncryptor);
+                issuanceCiphertext = await proverEncrypt(issuanceTimestamp, verifierPublicKey);
                 proverResult = await computeResult(proverEvaluator, thresholdCiphertext, issuanceCiphertext);
-                await verifierDecrypt(proverResult, verifierDecryptor).then((res) => {
+                await verifierDecrypt(proverResult, verifierClientKey).then((res) => {
                     assert.isTrue(res, 'the issuance date invalid');
                 })
             }

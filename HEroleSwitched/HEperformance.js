@@ -64,7 +64,7 @@ async function HEperformance(runs) {
             generateProverSetUpStat.result.signPublicKey,
             generateProverSetUpStat.result.proverSignature,
             degreeThresholdTimestamp,
-            generateProverSetUpStat.result.proverEncryptor,
+            generateProverSetUpStat.result.proverPublicKey,
             generateProverSetUpStat.result.verifierEvaluator,
             10,
         );
@@ -74,7 +74,7 @@ async function HEperformance(runs) {
             proverDecrypt,
             'proverDecrypt',
             generateVerifierStat.result.cipher,
-            generateProverSetUpStat.result.proverDecryptor,
+            generateProverSetUpStat.result.proverClientKey,
         );
         proverDecryptStat.push({cpu: generateProverDecryptStat.cpu, memory: generateProverDecryptStat.memory, duration: generateProverDecryptStat.duration});
 
