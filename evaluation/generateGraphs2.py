@@ -5,10 +5,13 @@ import numpy as np
 new_zkp_file_path = './evaluation/ZKP_performance_data.csv'
 new_he_file_path = './evaluation/HE_performance_data.csv'
 original_he_file_path = './evaluation/HE_performance_data_orig.csv'
+rust_he_file_path = './evaluation/HE_performance_data_rs.csv'
 
 new_zkp_data = pd.read_csv(new_zkp_file_path)
 new_he_data = pd.read_csv(new_he_file_path)
 original_he_data = pd.read_csv(original_he_file_path)
+rust_he_data = pd.read_csv(rust_he_file_path)
+print(rust_he_data.columns.tolist())
 
 # Extract relevant columns for comparison
 new_zkp_metrics = new_zkp_data[['generateZKPCPU', 'generateZKPMemory', 'generateZKPDuration',
@@ -23,12 +26,22 @@ original_he_metrics = original_he_data[['verifierSetUpCPU', 'verifierSetUpMemory
                               'proverCPU', 'proverMemory', 'proverTime',
                               'verifierVerifyCPU', 'verifierVerifyMemory', 'verifierVerifyTime']]
 
+rust_he_metrics = rust_he_data[['verifierSetUpCPU', 'verifierSetUpMemory', 'verifierSetUpTime',
+                              'proverCPU', 'proverMemory', 'proverTime',
+                              'verifierVerifyCPU', 'verifierVerifyMemory', 'verifierVerifyTime']]
+
 # Rename columns for better comparison
 new_zkp_metrics.columns = ['GenCPU', 'GenMemory', 'GenDuration', 'VerCPU', 'VerMemory', 'VerDuration']
+
 new_he_metrics.columns = ['SetupCPU', 'SetupMemory', 'SetupDuration',
                           'CalculationCPU', 'CalculationMemory', 'CalculationDuration',
                           'VerificationCPU', 'VerificationMemory', 'VerificationDuration']
+
 original_he_metrics.columns = ['SetupCPU', 'SetupMemory', 'SetupDuration',
+                          'CalculationCPU', 'CalculationMemory', 'CalculationDuration',
+                          'VerificationCPU', 'VerificationMemory', 'VerificationDuration']
+
+rust_he_metrics.columns = ['SetupCPU', 'SetupMemory', 'SetupDuration',
                           'CalculationCPU', 'CalculationMemory', 'CalculationDuration',
                           'VerificationCPU', 'VerificationMemory', 'VerificationDuration']
 
@@ -204,16 +217,16 @@ plot_comparison_box(
      '%'
 )
 
-plot_comparison_bar(
-    [filter_non_zero(new_zkp_metrics['GenCPU']), filter_non_zero(new_zkp_metrics['VerCPU']),
-     filter_non_zero(new_he_metrics['SetupCPU']), filter_non_zero(new_he_metrics['CalculationCPU']),
-     filter_non_zero(new_he_metrics['VerificationCPU'])],
-     x_labels,
-     'CPU Usage',
-     'CPU Usage (%)',
-     'cpu_usage_comparison',
-     '%'
-)
+# plot_comparison_bar(
+#     [filter_non_zero(new_zkp_metrics['GenCPU']), filter_non_zero(new_zkp_metrics['VerCPU']),
+#      filter_non_zero(new_he_metrics['SetupCPU']), filter_non_zero(new_he_metrics['CalculationCPU']),
+#      filter_non_zero(new_he_metrics['VerificationCPU'])],
+#      x_labels,
+#      'CPU Usage',
+#      'CPU Usage (%)',
+#      'cpu_usage_comparison',
+#      '%'
+# )
 
 # Memory Usage Comparison
 plot_comparison_box(
@@ -289,5 +302,36 @@ plot_comparison_box(
     'Duration per Function',
     'Duration (ms)',
     'original_duration_comparison',
+    'ms'
+)
+
+x_labels = ['Rust comp. \nHE Setup', 'Rust comp. \nHE Calculation', 'Rust comp. \nHE Verification', 'Comparison \nHE Setup', 'Comparison \nHE Calculation', 'Comparison \nHE Verification']
+
+plot_comparison_box(
+    [filter_non_zero(rust_he_metrics['SetupCPU']), filter_non_zero(rust_he_metrics['CalculationCPU']), filter_non_zero(rust_he_metrics['VerificationCPU']),
+     filter_non_zero(new_he_metrics['SetupCPU']), filter_non_zero(new_he_metrics['CalculationCPU']), filter_non_zero(new_he_metrics['VerificationCPU'])],
+     x_labels,
+     'CPU Usage per Function',
+     'CPU Usage (%)',
+     'rust_cpu_usage_comparison',
+     '%'
+)
+
+plot_comparison_box(
+    [rust_he_metrics['SetupMemory'], rust_he_metrics['CalculationMemory'], rust_he_metrics['VerificationMemory'], new_he_metrics['SetupMemory'], new_he_metrics['CalculationMemory'], new_he_metrics['VerificationMemory']],
+    x_labels,
+    'Memory Usage per Function',
+    'Memory Usage (MB)',
+    'rust_memory_usage_comparison',
+    'MB'
+)
+
+plot_comparison_box(
+    [rust_he_metrics['SetupDuration'], rust_he_metrics['CalculationDuration'], rust_he_metrics['VerificationDuration'], new_he_metrics['SetupDuration'],
+     new_he_metrics['CalculationDuration'], new_he_metrics['VerificationDuration']],
+    x_labels,
+    'Duration per Function',
+    'Duration (ms)',
+    'rust_duration_comparison',
     'ms'
 )
