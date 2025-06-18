@@ -7,14 +7,14 @@
 use napi_derive::napi;
 use tfhe::prelude::*;
 use tfhe::safe_serialization::{safe_serialize, safe_deserialize};
-use tfhe::{set_server_key, ClientKey, ConfigBuilder, FheInt64, FheBool, CompressedPublicKey, CompressedServerKey};
+use tfhe::{set_server_key, ClientKey, ConfigBuilder, FheInt64, FheBool, CompactCiphertextList, CompressedCompactPublicKey, CompressedServerKey};
 
 #[napi]
 fn get_keys() -> Vec<Vec<u8>> {
-    let config = ConfigBuilder::default().build();
+    let config = ConfigBuilder::default().use_custom_parameters(tfhe::shortint::parameters::PARAM_MESSAGE_2_CARRY_2_KS_PBS_GAUSSIAN_2M128,).build();
     let client_key= ClientKey::generate(config);
     let compressed_server_key = CompressedServerKey::new(&client_key);
-    let compressed_public_key = CompressedPublicKey::new(&client_key);
+    let compressed_public_key = CompressedCompactPublicKey::new(&client_key);
 
     let mut client_key_ser = vec![];
     safe_serialize(&client_key, &mut client_key_ser, 1 << 30).unwrap();
@@ -38,10 +38,11 @@ fn encrypt(plain: i64, client_key_ser:Vec<u8>) -> Vec<u8> {
 
 #[napi]
 fn encrypt_public_key(plain: i64, compressed_public_key_ser:Vec<u8>) -> Vec<u8> {
-    let compressed_public_key: CompressedPublicKey = safe_deserialize(compressed_public_key_ser.as_slice(), 1 << 30).unwrap();
+    let compressed_public_key: CompressedCompactPublicKey = safe_deserialize(compressed_public_key_ser.as_slice(), 1 << 30).unwrap();
     let public_key = compressed_public_key.decompress();
-   
-    let cipher = FheInt64::encrypt(plain, &public_key);
+    let compact_list = CompactCiphertextList::builder(&public_key).push(plain).build();
+    let expanded = compact_list.expand().unwrap();
+    let cipher:FheInt64 = expanded.get(0).unwrap().unwrap();  
     let mut cipher_ser = vec![];
     safe_serialize(&cipher, &mut cipher_ser, 1 << 20).unwrap();
     return cipher_ser;
@@ -50,10 +51,11 @@ fn encrypt_public_key(plain: i64, compressed_public_key_ser:Vec<u8>) -> Vec<u8> 
 #[napi]
 fn encrypt_bool_public_key(plain: bool, compressed_public_key_ser:Vec<u8>) -> Vec<u8> {
     let compressed_public_key_ser: Vec<u8> = compressed_public_key_ser;
-    let compressed_public_key: CompressedPublicKey = safe_deserialize(compressed_public_key_ser.as_slice(), 1 << 30).unwrap();
+    let compressed_public_key: CompressedCompactPublicKey = safe_deserialize(compressed_public_key_ser.as_slice(), 1 << 30).unwrap();
     let public_key = compressed_public_key.decompress();
-   
-    let cipher = FheBool::encrypt(plain, &public_key);
+    let compact_list = CompactCiphertextList::builder(&public_key).push(plain).build();
+    let expanded = compact_list.expand().unwrap();
+    let cipher:FheBool = expanded.get(0).unwrap().unwrap();  
     let mut cipher_ser = vec![];
     safe_serialize(&cipher, &mut cipher_ser, 1 << 20).unwrap();
     return cipher_ser;
