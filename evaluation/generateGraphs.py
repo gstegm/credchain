@@ -213,7 +213,7 @@ plot_comparison_box(
      x_labels,
      'CPU Usage per Function',
      'CPU Usage (%)',
-     'cpu_usage_comparison',
+     'ZKP_cpu_usage_comparison',
      '%'
 )
 
@@ -235,7 +235,7 @@ plot_comparison_box(
     x_labels,
     'Memory Usage per Function',
     'Memory Usage (MB)',
-    'memory_usage_comparison',
+    'ZKP_memory_usage_comparison',
     'MB'
 )
 
@@ -257,7 +257,7 @@ plot_comparison_box(
     x_labels,
     'Duration per Function',
     'Duration (ms)',
-    'duration_comparison',
+    'ZKP_duration_comparison',
     'ms'
 )
 
