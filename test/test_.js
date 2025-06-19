@@ -139,7 +139,7 @@ describe("DID Registry", function() {
         });
 
         it("(3) Verifier encrypts threshold timestamp", async() => {
-            thresholdCiphertext = await verifierEncrypt(thresholdTimestamp, verifierPublicKey);
+            thresholdCiphertext = await verifierEncrypt(thresholdTimestamp, verifierClientKey);
             assert.exists(thresholdCiphertext, 'theshold data was not encrypted');
         });
 
@@ -202,7 +202,7 @@ describe("DID Registry", function() {
             verifierSignPublicKey = signingKeys.publicKey;
             verifierSignPrivateKey = signingKeys.privateKey;
 
-            thresholdCiphertext = await verifierEncrypt(thresholdTimestamp, verifierPublicKey);
+            thresholdCiphertext = await verifierEncrypt(thresholdTimestamp, verifierClientKey);
             verifierSignature = await verifierSign(verifierSignPrivateKey, thresholdCiphertext);
 
             let ver = await signatureVerify(verifierSignPublicKey, verifierSignature, thresholdCiphertext);
