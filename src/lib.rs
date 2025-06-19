@@ -72,7 +72,7 @@ fn greater_than(cipher_a_ser: Vec<u8>, cipher_b_ser: Vec<u8>, compressed_server_
     //set_server_key(gpu_key);
     set_server_key(server_key);
 
-    let gtresult = cipher_a.gt(cipher_b.clone());
+    let gtresult = cipher_a.gt(&cipher_b);
     let mut gtresult_ser = vec![];
     safe_serialize(&gtresult, &mut gtresult_ser, 1 << 20).unwrap();
 
@@ -90,7 +90,7 @@ fn less_than_equal(cipher_a_ser: Vec<u8>, cipher_b_ser: Vec<u8>, compressed_serv
     //set_server_key(gpu_key);
     set_server_key(server_key);
 
-    let leresult = cipher_a.le(cipher_b.clone());
+    let leresult = cipher_a.le(&cipher_b);
     let mut leresult_ser = vec![];
     safe_serialize(&leresult, &mut leresult_ser, 1 << 20).unwrap();
 
