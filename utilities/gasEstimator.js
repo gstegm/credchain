@@ -25,8 +25,8 @@ args.forEach(arg => {
 const paths = [
     // './HomomorphicEncryption/companySetupData.json',
     // './HomomorphicEncryption/studentData.json',
-    //'./HomomorphicEncryption/verifierData.json',
-    './HomomorphicEncryption/proverData.json',
+    //'./HomomorphicEncryption/verifierSetUpData.json',
+    './HomomorphicEncryption/thresholdCiphertext.json',
     // './ZKP/verificationKey.json',
     // './ZKP/proof.json'
 ];
@@ -56,7 +56,7 @@ function estimateGas(filePath, ethPriceInUsd, gasPriceGwei, storeOnChain) {
 
         // Convert JSON data to a string and calculate its size
         const dataString = JSON.stringify(jsonData);
-        const dataSizeBytes = 463414;
+        const dataSizeBytes = Buffer.byteLength(dataString, 'utf-8'); 
         const dataSizeKilobytes = dataSizeBytes / 1024;
 
         // Estimate gas required

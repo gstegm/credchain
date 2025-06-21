@@ -11,6 +11,7 @@ async function generateEncryptionKeys() {
         evaluator: keys[1],
         publicKey: keys[2],
     }
+
     return instances;
 }
 
@@ -74,6 +75,7 @@ async function verifierSetUp(thresholdPlaintext) {
     let thresholdCiphertext = await verifierEncrypt(thresholdPlaintext, clientKey);
     let signature = await verifierSign(signPrivateKey, thresholdCiphertext);
 
+
     let verifierSetUpData =  {
         signPublicKey: signPublicKey,
         verifierSignature: signature,
@@ -84,7 +86,12 @@ async function verifierSetUp(thresholdPlaintext) {
     }
 
     // Save the results to file
-    fs.writeFileSync('./HomomorphicEncryption/verifierSetupData.json', JSON.stringify(verifierSetUpData));
+    const combinedData = {
+        verifierPublicKey: verifierSetUpData.verifierPublicKey,
+        proverEvaluator: verifierSetUpData.proverEvaluator
+    };
+    fs.writeFileSync('./HomomorphicEncryption/verifierSetUpData.json', JSON.stringify(combinedData));
+    fs.writeFileSync('./HomomorphicEncryption/thresholdCiphertext.json', JSON.stringify(verifierSetUpData.thresholdCiphertext));
 
     return verifierSetUpData;
 }
