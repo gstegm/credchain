@@ -1,0 +1,26 @@
+node_modules
+.env
+coverage
+coverage.json
+typechain
+typechain-types
+
+#Hardhat files
+cache
+artifacts
+HomomorphicEncryption/companySecretKey.json
+HomomorphicEncryption/companySetupData.json
+HomomorphicEncryption/verifierSetupData.json
+HomomorphicEncryption/verifierSetUpData.json
+HomomorphicEncryption/thresholdCiphertext.json
+HomomorphicEncryption/proverData.json
+ZKP/proof.json
+HomomorphicEncryption/studentData.json
+ZKP/verificationKey.json
+ZKP/proof.json
+evaluation/cpu_usage_comparison.png
+target
+Cargo.lock
+tfhe_comparison.node
+evaluation/HE_performance_data.csv
+evaluation/ZKP_performance_data.csv
