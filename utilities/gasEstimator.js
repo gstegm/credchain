@@ -26,9 +26,9 @@ const paths = [
     // './HomomorphicEncryption/companySetupData.json',
     // './HomomorphicEncryption/studentData.json',
     //'./HomomorphicEncryption/verifierSetUpData.json',
-    './HomomorphicEncryption/thresholdCiphertext.json',
-    // './ZKP/verificationKey.json',
-    // './ZKP/proof.json'
+    //'./HomomorphicEncryption/thresholdCiphertext.json',
+    './ZKP/verificationKey.json',
+    './ZKP/proof.json'
 ];
 
 /**
