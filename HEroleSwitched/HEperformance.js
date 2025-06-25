@@ -66,7 +66,7 @@ async function HEperformance(runs) {
             degreeThresholdTimestamp,
             generateProverSetUpStat.result.proverPublicKey,
             generateProverSetUpStat.result.verifierEvaluator,
-            10,
+            128,
         );
         verifierStat.push({cpu: generateVerifierStat.cpu, memory: generateVerifierStat.memory, duration: generateVerifierStat.duration});
 
@@ -84,7 +84,6 @@ async function HEperformance(runs) {
             generateProverDecryptStat.result,
             generateVerifierStat.result.decoyValueOrFlipped, 
             generateVerifierStat.result.computationIdxs,
-            10
         );
         verifierVerifyStat.push({cpu: generateVerifierVerifyStat.cpu, memory: generateVerifierVerifyStat.memory, duration: generateVerifierVerifyStat.duration});
     };
@@ -179,8 +178,8 @@ async function HEperformance(runs) {
     const json2csvParser = new Parser({ fields });
     const csv = json2csvParser.parse(csvData);
 
-    fs.writeFileSync('./evaluation/HE_performance_data.csv', csv);
-    console.log('Performance data saved to HE_performance_data.csv');
+    fs.writeFileSync('./evaluation/HE_performance_data_role_switched.csv', csv);
+    console.log('Performance data saved to HE_performance_data_role_switched.csv');
 }
 
 // HEperformance().catch(console.error);

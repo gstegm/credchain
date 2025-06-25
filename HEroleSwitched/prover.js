@@ -40,12 +40,12 @@ async function proverSign(key, data) {
     return signature;
 }
 
-async function proverDecrypt(mixedListCipher, clientKey){
-    let mixedListPlain = [];
-    for (let i = 0; i < 10; i++) {
-        mixedListPlain.push(tfhe_rs.decrypt(mixedListCipher[i], clientKey));
+async function proverDecrypt(cipher, clientKey){
+    let plain = [];
+    for (let i = 0; i < cipher.length; i++) {
+        plain.push(tfhe_rs.decrypt(cipher[i], clientKey));
     }
-    return mixedListPlain;
+    return plain;
 }
 
 async function proverSetUp(issuancePlaintext) {

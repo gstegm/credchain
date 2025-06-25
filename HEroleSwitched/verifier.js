@@ -70,7 +70,8 @@ async function verifierCreateDecoys(evaluator, publicKey, thresholdPlaintext, is
     return {cipher, decoyValueOrFlipped, computationIdxs};
 }
 
-async function verifierVerify(plain, decoyValueOrFlipped, computationIdxs, n) {
+async function verifierVerify(plain, decoyValueOrFlipped, computationIdxs) {
+    let n = plain.length;
     let validCount = 0, invalidCount = 0;
     for (let i = 0; i < n; i++) {
         if (computationIdxs.includes(i) && !decoyValueOrFlipped[i]) {
