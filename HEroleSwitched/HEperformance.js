@@ -2,6 +2,7 @@ const { verifierCalculate, verifierVerify } = require("./verifier.js");
 const { proverSetUp, proverDecrypt } = require("./prover.js");
 // const { companySetup } = require("./company");
 const pidusage = require('pidusage');
+const usage = require('cpu-percentage');
 const { performance, PerformanceObserver } = require('perf_hooks');
 const fs = require('fs');
 const { Parser } = require('json2csv');
@@ -10,16 +11,18 @@ const degreeThresholdTimestamp = 1262304000;  // Unix timestamp: Fri Jan 01 2010
 const degreeIssuanceTimestamp = 1500000000;   // Unix timestamp: Fri Jul 14 2017 02:40:00
 
 async function measureFunctionExecution(func, label, ...args) {
+    const start = usage();
     performance.mark(`${label}-start`);
     const result = await func(...args);
     performance.mark(`${label}-end`);
     performance.measure(label, `${label}-start`, `${label}-end`);
-    const { cpu, memory } = await pidusage(process.pid);
+    const { memory } = await pidusage(process.pid);
+    const cpu = usage(start).percent;
     const duration = performance.getEntriesByName(label)[0].duration;
     performance.clearMarks();
     performance.clearMeasures();
     return { cpu: Number(cpu.toFixed(2)), memory: Number((memory / 1024 / 1024).toFixed(2)), duration: Number(duration.toFixed(2)), result };
-}
+} 
 
 function calculateStats(values) {
     // Filter out zero values and count the zeros
