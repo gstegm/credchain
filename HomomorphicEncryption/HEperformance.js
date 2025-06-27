@@ -54,7 +54,8 @@ async function HEperformance(runs) {
             degreeThresholdTimestamp
         );
         // remove result from statistics stack
-        verifierSetUpStat.push({cpu: generateVerifierSetUpStat.cpu, memory: generateVerifierSetUpStat.memory, duration: generateVerifierSetUpStat.duration});
+        //verifierSetUpStat.push({cpu: generateVerifierSetUpStat.cpu, memory: generateVerifierSetUpStat.memory, duration: generateVerifierSetUpStat.duration});
+        verifierSetUpStat.push(generateVerifierSetUpStat);
 
         const generateProverStat = await measureFunctionExecution(
             proverCalculate,
@@ -66,7 +67,8 @@ async function HEperformance(runs) {
             generateVerifierSetUpStat.result.verifierPublicKey,
             generateVerifierSetUpStat.result.proverEvaluator,
         );
-        proverStat.push({cpu: generateProverStat.cpu, memory: generateProverStat.memory, duration: generateProverStat.duration});
+        //proverStat.push({cpu: generateProverStat.cpu, memory: generateProverStat.memory, duration: generateProverStat.duration});
+        proverStat.push(generateProverStat);
 
         const generateVerifierVerifyStat = await measureFunctionExecution(
             verifierProve,
@@ -74,7 +76,8 @@ async function HEperformance(runs) {
             generateProverStat.result,
             generateVerifierSetUpStat.result.verifierClientKey,
         );
-        verifierVerifyStat.push({cpu: generateVerifierVerifyStat.cpu, memory: generateVerifierVerifyStat.memory, duration: generateVerifierVerifyStat.duration});
+        //verifierVerifyStat.push({cpu: generateVerifierVerifyStat.cpu, memory: generateVerifierVerifyStat.memory, duration: generateVerifierVerifyStat.duration});
+        verifierVerifyStat.push(generateVerifierVerifyStat);
     };
 
     // measure Step 1

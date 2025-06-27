@@ -22,5 +22,3 @@ evaluation/cpu_usage_comparison.png
 target
 Cargo.lock
 tfhe_comparison.node
-evaluation/HE_performance_data.csv
-evaluation/ZKP_performance_data.csv

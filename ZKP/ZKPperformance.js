@@ -51,12 +51,12 @@ async function ZKPperformance(runs) {
         console.log(`Run ${i + 1}/${runs}:`);
 
         const generateStats = await measureFunctionExecution(generateZKP, 'generateZKP', degreeIssuanceTimestamp, degreeThresholdTimestamp);
-        //generateZKPStats.push(generateStats);
-        generateZKPStats.push({cpu: generateStats.cpu, memory: generateStats.memory, duration: generateStats.duration});
+        generateZKPStats.push(generateStats);
+        //generateZKPStats.push({cpu: generateStats.cpu, memory: generateStats.memory, duration: generateStats.duration});
 
         const verifyStats = await measureFunctionExecution(verifyZKP, 'verifyZKP', generateStats.result.proof, generateStats.result.vk);
-        //verifyZKPStats.push(verifyStats);
-        verifyZKPStats.push({cpu: verifyStats.cpu, memory: verifyStats.memory, duration: verifyStats.duration});
+        verifyZKPStats.push(verifyStats);
+        //verifyZKPStats.push({cpu: verifyStats.cpu, memory: verifyStats.memory, duration: verifyStats.duration});
     }
 
     const generateZKPCPU = generateZKPStats.map(stat => stat.cpu);
