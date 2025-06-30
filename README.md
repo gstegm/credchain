@@ -3,10 +3,14 @@
 The project implements prototypes of two privacy-preserving mechanisms for metadata in the SSI platform CredChain.
 
 # Setup
-
-First, we need to compile and deploy smart contracts to the testnet. To do this, make sure all dependencies is installed on your environment or install using: 
+First, the Rust programming language needs to be installed on the system used, which is described on https://www.rust-lang.org/tools/install. 
+Then, we need to compile and deploy smart contracts to the testnet. To do this, make sure all dependencies is installed on your environment or install using: 
 ```shell
 npm install
+```
+In order to build the TFHE-rs addon from Rust, run
+```shell
+npm run build
 ```
 To deploy, start the hardhat node with:
 ```shell
@@ -32,6 +36,11 @@ npx hardhat test test/testZKP.js
 npx hardhat test test/testHE.js
 ```
 
+## 3) Homomorphic Encryption (HE) with role-switched protocol
+```shell
+npx hardhat test test/testHEroleSwitched.js
+```
+
 # Evaluation
 After running the above two privacy-preserving mechanism tests, you can run the following commands to evaluate the performance.
 
@@ -54,6 +63,7 @@ Enter any integer to specify the amount of runs for both prototypes.
 ```shell
 node evaluation/generateBenchmarks.js 100
 ```
+If benchmarks are required for the role-switched protocol as well, the corresponding line in generateBenchmarks.js needs to be uncommented.
 
 ## Plotting Data
 This project uses Python 3.11.9 to plot data. It is recommended to use Python version 3.11 or newer to avoid any compatibility issues. Make sure that the libraries `matplotlib`, `pandas` and `numpy` are installed.
@@ -68,7 +78,8 @@ python evaluation/generateGraphs.py
 - [Hardhat Boilerplate Project](https://hardhat.org/tutorial/boilerplate-project) featuring smart contracts and frontend files structure. 
 - [Tutorial for building Web3 Application](https://medium.com/coinmonks/build-a-web-3-application-with-solidity-hardhat-react-and-web3js-61b7ff137885) using Hardhat, React and Web3 library. 
 - [zokrates-js](https://github.com/Zokrates/ZoKrates/tree/develop/zokrates_js) library for Zero-Knowledge Proofs in Javascript. Read the documentation [here](https://zokrates.github.io/toolbox/zokrates_js.html).
-- [node-seal](https://github.com/s0l0ist/node-seal) library for Homomorphic Encryption in Javascript, which is based on Microsoft SEAL. Read the documentation [here](https://s0l0ist.github.io/node-seal/).
+- [TFHE-rs](https://github.com/zama-ai/tfhe-rs) library for Homomorphic Encryption in Rust, based on the TFHE encryption scheme. Read the documentation [here](https://docs.zama.ai/tfhe-rs)
+- [NAPI-RS](https://github.com/napi-rs/napi-rs) library for building compiled Node.js addons in Rust. Read the documentation [here](https://napi.rs/docs/introduction/getting-started)
 
 # Code Base
 The original CredChain code based was developed by Yue Liu. This repo builds on the updated CredChain version to latest Solidity (^0.8.0) developed by [Daria Schumm](https://github.com/schummd), which utilises a new deployment and testing framework (Hardhat and Truffle) and includes new features (revocation mechanism). 
