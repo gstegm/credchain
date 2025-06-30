@@ -79,7 +79,7 @@ python evaluation/generateGraphs.py
 - [Hardhat Boilerplate Project](https://hardhat.org/tutorial/boilerplate-project) featuring smart contracts and frontend files structure. 
 - [Tutorial for building Web3 Application](https://medium.com/coinmonks/build-a-web-3-application-with-solidity-hardhat-react-and-web3js-61b7ff137885) using Hardhat, React and Web3 library. 
 - [zokrates-js](https://github.com/Zokrates/ZoKrates/tree/develop/zokrates_js) library for Zero-Knowledge Proofs in Javascript. Read the documentation [here](https://zokrates.github.io/toolbox/zokrates_js.html).
-- [TFHE-rs](https://github.com/zama-ai/tfhe-rs) library for Homomorphic Encryption in Rust, based on the TFHE encryption scheme. Read the documentation [here](https://docs.zama.ai/tfhe-rs).
+- [TFHE-rs](https://github.com/zama-ai/tfhe-rs) library for homomorphic encryption in Rust, based on the TFHE encryption scheme. Read the documentation [here](https://docs.zama.ai/tfhe-rs).
 - [NAPI-RS](https://github.com/napi-rs/napi-rs) library for building compiled Node.js addons in Rust. Read the documentation [here](https://napi.rs/docs/introduction/getting-started).
 
 # Code Base
