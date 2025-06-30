@@ -3,7 +3,8 @@
 The project implements prototypes of two privacy-preserving mechanisms for metadata in the SSI platform CredChain.
 
 # Setup
-First, the Rust programming language needs to be installed on the system used, which is described on https://www.rust-lang.org/tools/install. 
+First, the Rust programming language needs to be installed on the system used, which is described [here](https://www.rust-lang.org/tools/install).
+
 Then, we need to compile and deploy smart contracts to the testnet. To do this, make sure all dependencies is installed on your environment or install using: 
 ```shell
 npm install
@@ -78,8 +79,8 @@ python evaluation/generateGraphs.py
 - [Hardhat Boilerplate Project](https://hardhat.org/tutorial/boilerplate-project) featuring smart contracts and frontend files structure. 
 - [Tutorial for building Web3 Application](https://medium.com/coinmonks/build-a-web-3-application-with-solidity-hardhat-react-and-web3js-61b7ff137885) using Hardhat, React and Web3 library. 
 - [zokrates-js](https://github.com/Zokrates/ZoKrates/tree/develop/zokrates_js) library for Zero-Knowledge Proofs in Javascript. Read the documentation [here](https://zokrates.github.io/toolbox/zokrates_js.html).
-- [TFHE-rs](https://github.com/zama-ai/tfhe-rs) library for Homomorphic Encryption in Rust, based on the TFHE encryption scheme. Read the documentation [here](https://docs.zama.ai/tfhe-rs)
-- [NAPI-RS](https://github.com/napi-rs/napi-rs) library for building compiled Node.js addons in Rust. Read the documentation [here](https://napi.rs/docs/introduction/getting-started)
+- [TFHE-rs](https://github.com/zama-ai/tfhe-rs) library for Homomorphic Encryption in Rust, based on the TFHE encryption scheme. Read the documentation [here](https://docs.zama.ai/tfhe-rs).
+- [NAPI-RS](https://github.com/napi-rs/napi-rs) library for building compiled Node.js addons in Rust. Read the documentation [here](https://napi.rs/docs/introduction/getting-started).
 
 # Code Base
 The original CredChain code based was developed by Yue Liu. This repo builds on the updated CredChain version to latest Solidity (^0.8.0) developed by [Daria Schumm](https://github.com/schummd), which utilises a new deployment and testing framework (Hardhat and Truffle) and includes new features (revocation mechanism). 
