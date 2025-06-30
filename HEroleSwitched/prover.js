@@ -72,7 +72,7 @@ async function proverSetUp(issuancePlaintext) {
     }
 
     // Save the results to file
-    //fs.writeFileSync('./HomomorphicEncryption/verifierSetupData.json', JSON.stringify(proverSetUpData));
+    //fs.writeFileSync('./HEroleSwitched/proverSetupData.json', JSON.stringify(proverSetUpData));
 
     return proverSetUpData;
 }

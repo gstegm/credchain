@@ -12,7 +12,7 @@ async function verifierSignatureVerify(pubKey, signature, data) {
 
 async function verifierComputeResult(evaluator, cipher1, cipher2) {
     const compResult = tfhe_rs.lessThanEqual(cipher1, cipher2, evaluator);
-    fs.writeFileSync('./HomomorphicEncryption/proverData.json', JSON.stringify(compResult));
+    fs.writeFileSync('./HEroleSwitched/verifierData.json', JSON.stringify(compResult));
     return compResult;
 }
 
